@@ -45,6 +45,12 @@ def main():
     monday = today.weekday() == 0
     force = os.environ.get("UBE_FORCE", "").split(",")
 
+    # ---------- display names (config/display_names.json), even when Yahoo is down ----------
+    teams, shown_renames = build.apply_display_names(teams)
+    if shown_renames:
+        build.rename_everywhere(shown_renames, files)
+        notes.append("team display names updated")
+
     # ---------- Yahoo ----------
     y = yahoo.Client(cfg)
     meta, y_teams, yahoo_ok, y_stats = None, None, False, {}
@@ -53,6 +59,7 @@ def main():
         y_teams = y.rosters()
         teams, renames = build.team_names(teams, y_teams, cfg)
         build.rename_everywhere(renames, files)
+        shown_renames.update(renames)
         for old, new in renames.items():
             notes.append("team renamed: %s is now %s" % (old, new))
         names = {t["team_id"]: t["team"] for t in teams}
@@ -173,7 +180,19 @@ def main():
     except Exception as e:
         problems.append("Team cards: %s (kept the previous cards)" % e)
 
+    if shown_renames:
+        build.rename_in_text(shown_renames, files["log"], "change")
+        build.rename_in_text(shown_renames, files["news"], "angle")
+        if files["players"] and teams:
+            try:
+                files["managers"] = build.manager_rows(files["managers"], teams, build.run_model())
+            except Exception:
+                pass
+        util.write("managers", files["managers"])
+        util.write("news", files["news"])
     changed = [n for n in util.PAGE_DATASETS if n != "log" and util.dump(files[n]) != before[n]]
+    if util.dump(files["log"]) != before["log"] and not changed:
+        changed = ["log"]
     if changed:
         order = ["Week", "standings", "roster", "IL moves", "pending trades", "Hashtag", "NBA schedule", "injuries", "news", "team renamed"]
         notes = sorted(dict.fromkeys(notes), key=lambda n: next((i for i, k in enumerate(order) if n.startswith(k)), 99))

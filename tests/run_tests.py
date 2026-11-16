@@ -17,6 +17,10 @@ WORK = tempfile.mkdtemp(prefix="ube-test-")
 for item in ("data", "config", "scripts", "archive", "index.html", "page.html", "shim.js", "shim.css"):
     src = os.path.join(REPO, item)
     (shutil.copytree if os.path.isdir(src) else shutil.copy2)(src, os.path.join(WORK, item))
+DISPLAY = os.path.join(WORK, "config", "display_names.json")
+SAVED_DISPLAY = open(DISPLAY, encoding="utf-8").read() if os.path.exists(DISPLAY) else None
+if SAVED_DISPLAY is not None:
+    os.remove(DISPLAY)
 os.environ.update(UBE_ROOT=WORK, YAHOO_CLIENT_ID="id", YAHOO_CLIENT_SECRET="secret", YAHOO_REFRESH_TOKEN="refresh-1",
                   NEW_REFRESH_TOKEN_FILE=os.path.join(WORK, "new_token.txt"))
 os.environ.pop("GITHUB_STEP_SUMMARY", None)
@@ -435,6 +439,27 @@ buf = io.StringIO()
 with contextlib.redirect_stdout(buf):
     code = yahoo_login.main()
 check("code exchanged, key saved to file, only 'ok' printed", code == 0 and open(os.environ["NEW_REFRESH_TOKEN_FILE"]).read() == "refresh-2" and buf.getvalue().strip() == "ok", buf.getvalue())
+
+print("11. Display names (config/display_names.json), with Yahoo down")
+shutil.rmtree(os.path.join(WORK, "data"))
+shutil.copytree(os.path.join(REPO, "data"), os.path.join(WORK, "data"))
+json.dump(json.load(open(os.path.join(REPO, "config", "league.json"))), open(cfg_path, "w"))
+with open(DISPLAY, "w", encoding="utf-8") as f:
+    f.write(SAVED_DISPLAY or '{"1": "Team Hali", "4": "Team Luka"}')
+w2 = World()
+w2.fail = {"yahoo"}
+code, out = run(w2, "2026-11-17")
+blob = "".join(open(os.path.join(WORK, "data", f), encoding="utf-8").read() for f in os.listdir(os.path.join(WORK, "data")) if f != "htb.json")
+check("old names gone from every data file, changelog included", all(x not in blob for x in ("Haliban", "Cotton Pickers")), [x for x in ("Haliban", "Cotton Pickers") if x in blob])
+check("new names used", "Team Hali" in blob and "Team Luka" in blob and {t["team_id"]: t["team"] for t in load("teams")}["4"] == "Team Luka")
+check("tagline kept for renamed team", next(m for m in load("managers") if m["team"] == "Team Hali")["tagline"] == "Dirty Work")
+check("changelog row does not repeat the old names", "display names updated" in load("log")[-1]["change"] and "Haliban" not in load("log")[-1]["change"], load("log")[-1])
+w2.fail = set()
+for tid, n in (("1", "Team Hali"), ("4", "Team Luka")):
+    pass
+code, out = run(w2, "2026-11-18")
+blob = "".join(open(os.path.join(WORK, "data", f), encoding="utf-8").read() for f in ("schedule.json", "standings.json", "rosters.json", "teams.json"))
+check("Yahoo's own names do not come back once Yahoo works", "Haliban" not in blob and "Cotton Pickers" not in blob and "Team Hali" in blob and code == 0, out)
 
 shutil.rmtree(WORK, ignore_errors=True)
 print("\n%d passed, %d failed" % (checks["pass"], checks["fail"]))

@@ -2,6 +2,7 @@
 import datetime as dt
 import json
 import os
+import re
 import subprocess
 
 from . import util
@@ -32,19 +33,64 @@ def rekey(table, alias):
 
 
 # ---------------- teams ----------------
+def display_names():
+    """config/display_names.json: {Yahoo team number: name shown on the hub}. Overrides Yahoo's team name."""
+    try:
+        with open(os.path.join(util.CONFIG, "display_names.json"), encoding="utf-8") as f:
+            return {str(k): str(v).strip() for k, v in json.load(f).items() if str(v).strip()}
+    except (OSError, ValueError):
+        return {}
+
+
 def team_names(teams_file, yahoo_teams, cfg):
-    """Returns (teams rows, {old name: new name}) from Yahoo's current names."""
+    """Returns (teams rows, {old name: new name}) from Yahoo's current names, with display names applied."""
     managers = {str(k): v for k, v in (cfg.get("managers") or {}).items()}
+    shown = display_names()
     old = {str(t["team_id"]): t for t in (teams_file or [])}
     rows, renames = [], {}
     for t in sorted(yahoo_teams, key=lambda x: int(x["team_id"] or 0)):
         tid = str(t["team_id"])
         prev = old.get(tid)
-        if prev and prev["team"] != t["name"] and t["name"]:
-            renames[prev["team"]] = t["name"]
+        name = shown.get(tid) or t["name"] or (prev or {}).get("team", "")
+        if prev and prev["team"] != name and name:
+            renames[prev["team"]] = name
         manager = managers.get(tid) or (prev or {}).get("manager") or t.get("nickname") or t["name"]
-        rows.append({"team_id": tid, "team": t["name"] or (prev or {}).get("team", ""), "manager": manager})
+        rows.append({"team_id": tid, "team": name, "manager": manager})
     return rows, renames
+
+
+def apply_display_names(teams):
+    """Without Yahoo: switch the saved team list to the display names. Returns (teams, {old: new})."""
+    shown = display_names()
+    renames = {}
+    for t in teams or []:
+        new = shown.get(str(t["team_id"]))
+        if new and new != t["team"]:
+            renames[t["team"]] = new
+            t["team"] = new
+    return teams, renames
+
+
+def text_variants(name):
+    """Ways an old team name appears in changelog text: full name, without 'The ', and its "X's" short form."""
+    out = {name}
+    if name.startswith("The "):
+        out.add(name[4:])
+    m = re.match(r"^(.*?[’']s)\s", name)
+    if m:
+        out.add(m.group(1))
+        out.add(m.group(1).replace("’", "'"))
+    return sorted(out, key=len, reverse=True)
+
+
+def rename_in_text(renames, rows, field):
+    """Replace old team names inside free text (changelog lines)."""
+    for row in rows or []:
+        text = row.get(field) or ""
+        for old, new in renames.items():
+            for v in text_variants(old):
+                text = re.sub(r"(?<![\w’'])" + re.escape(v) + r"(?![\w])", new, text)
+        row[field] = text
 
 
 def rename_everywhere(renames, files):

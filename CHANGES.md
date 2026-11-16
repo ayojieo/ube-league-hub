@@ -11,7 +11,14 @@ for the team cards, so the page and the update script cannot disagree.
 | Daily: injuries, news, pending trades. | Daily at 2:30 PM (Manila), automatic: Yahoo scores, standings, rosters, IL slots and pending trades; injuries; news. |
 | Yahoo sync (rosters, IL slots, standings, scores) on request. | Updates run on their own. No manual sync needed. |
 
-Check it yourself: compare `page.html` with the Claude hub's page; only these two lines differ.
+## Team names shown on this hub (1 line in page.html)
+
+`config/display_names.json` sets the name shown for a team, whatever it is called on Yahoo:
+team 1 shows as **Team Hali** (Yahoo: The Haliban) and team 4 as **Team Luka** (Yahoo: Master Luka’s Cotton Pickers).
+`page.html` marks your own team by name, so that line reads `mine: "Team Hali",` instead of `mine: "The Haliban",`.
+If you change team 1's display name, change that line to match.
+
+Check it yourself: compare `page.html` with the Claude hub's page; only these three lines differ.
 
 ## Added around the page (not inside it)
 
