@@ -39,5 +39,6 @@
 {"version": "1.37", "date": "2026-11-16", "change": "Moved to GitHub (self-updating)."},
 {"version": "1.38", "date": "2026-11-16", "change": "Hashtagbasketball stats refresh; NBA schedule; injuries; news."},
 {"version": "1.39", "date": "2026-11-16", "change": "News."},
-{"version": "1.40", "date": "2026-11-16", "change": "Standings; pending trades; injuries; news; team display names updated."}
+{"version": "1.40", "date": "2026-11-16", "change": "Standings; pending trades; injuries; news; team display names updated."},
+{"version": "1.41", "date": "2026-11-16", "change": "News."}
 ]
