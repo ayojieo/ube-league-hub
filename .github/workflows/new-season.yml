@@ -1,0 +1,50 @@
+name: New season
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type yes only if the current season is still live and you want to replace it"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hub-data
+  cancel-in-progress: false
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare
+        run: echo "NEW_REFRESH_TOKEN_FILE=$RUNNER_TEMP/yahoo_refresh" >> "$GITHUB_ENV"
+
+      - name: Build the new season
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+          UBE_CONFIRM: ${{ inputs.confirm }}
+        run: python3 scripts/new_season.py
+
+      - name: Save Yahoo key if Yahoo renewed it
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if [ -s "$NEW_REFRESH_TOKEN_FILE" ]; then
+            gh secret set YAHOO_REFRESH_TOKEN --repo "$GITHUB_REPOSITORY" < "$NEW_REFRESH_TOKEN_FILE"
+          fi
+          rm -f "$NEW_REFRESH_TOKEN_FILE"
+
+      - name: Save changes
+        run: |
+          git config user.name "ube-hub-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data archive page.html
+          git diff --cached --quiet || (git commit -m "New season" && (git push || (git pull --rebase && git push)))
