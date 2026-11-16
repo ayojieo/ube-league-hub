@@ -68,8 +68,26 @@ class Client:
         return parse_xml(text)
 
     # ---- league ----
+    def diagnose(self):
+        """Explain a 401/403: which NBA leagues can this Yahoo login see?"""
+        try:
+            root = self.get("/users;use_login=1/games;game_codes=nba/leagues")
+        except RuntimeError as e:
+            return "The Yahoo login itself is not accepted (%s). Check the app has Fantasy Sports Read, then redo Yahoo login." % e
+        seen = ["%s (%s, %s)" % ((lg.findtext("league_key") or "").strip(), (lg.findtext("name") or "").strip(), (lg.findtext("season") or "").strip())
+                for lg in root.iter("league")]
+        if not seen:
+            return "This Yahoo login is in no NBA leagues. Redo Yahoo login while signed into the Yahoo account that plays in the UBE League."
+        return "This Yahoo login can see: %s. Put the right one in config/league.json as league_key." % "; ".join(seen[-6:])
+
     def meta(self):
-        lg = self.get("/league/%s" % self.league).find("league")
+        try:
+            root = self.get("/league/%s" % self.league)
+        except RuntimeError as e:
+            if " 401 " in str(e) or " 403 " in str(e):
+                raise RuntimeError("%s. %s" % (e, self.diagnose())) from None
+            raise
+        lg = root.find("league")
         g = lambda k: (lg.findtext(k) or "").strip()
         return {"name": g("name"), "current_week": int(g("current_week") or 1), "start_week": int(g("start_week") or 1),
                 "end_week": int(g("end_week") or 0), "is_finished": g("is_finished") == "1", "season": g("season"),

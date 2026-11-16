@@ -116,7 +116,16 @@ def fetch(url, headers=None, data=None, timeout=40):
             charset = r.headers.get_content_charset() or "utf-8"
             return raw.decode(charset, "replace")
     except urllib.error.HTTPError as e:
-        raise RuntimeError("HTTP %s for %s" % (e.code, url.split("?")[0])) from None
+        detail = ""
+        try:
+            body = e.read().decode("utf-8", "replace")
+            m = re.search(r"<description>(.*?)</description>", body, re.S) or re.search(r'"(?:error_description|description)"\s*:\s*"([^"]+)"', body)
+            text = m.group(1) if m else re.sub(r"<[^>]+>", " ", body)
+            text = re.sub(r"\s+", " ", text).strip()[:200]
+            detail = (" (" + text + ")") if text else ""
+        except Exception:
+            pass
+        raise RuntimeError("HTTP %s for %s%s" % (e.code, url.split("?")[0], detail)) from None
     except urllib.error.URLError as e:
         raise RuntimeError("Could not reach %s (%s)" % (url.split("?")[0], e.reason)) from None
 
