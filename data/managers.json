@@ -5,8 +5,8 @@
 {"team": "Nathaniel's Notable Team", "manager": "Nathaniel", "tagline": "Run & Gun", "playbook": "PTS · ST · 3PTM", "punt": "REB, TO", "summary": "Best PTS; 9th in REB.", "overall_rank": 4},
 {"team": "Barangay Ginebra San Miguel", "manager": "Dean", "tagline": "Boards & Dimes", "playbook": "REB · AST · FG%", "punt": "PTS, 3PTM", "summary": "Best REB, AST; 9th in PTS.", "overall_rank": 5},
 {"team": "Yaxel and Em", "manager": "Steven", "tagline": "Stretch & Swat", "playbook": "BLK · 3PTM · PTS", "punt": "FG%, AST, ST", "summary": "3rd in BLK; 9th in FG%.", "overall_rank": 6},
-{"team": "The Haliban", "manager": "Allen", "tagline": "Dirty Work", "playbook": "ST · FG% · REB", "punt": "FT%, 3PTM, PTS", "summary": "Best ST; last in FT%, 3PTM, PTS.", "overall_rank": 7},
-{"team": "Master Luka’s Cotton Pickers", "manager": "Shondrae", "tagline": "Heliocentric", "playbook": "AST · PTS · 3PTM", "punt": "FG%, TO, FT%", "summary": "2nd in AST; last in FG%, TO.", "overall_rank": 8},
+{"team": "Team Hali", "manager": "Allen", "tagline": "Dirty Work", "playbook": "ST · FG% · REB", "punt": "FT%, 3PTM, PTS", "summary": "Best ST; last in FT%, 3PTM, PTS.", "overall_rank": 7},
+{"team": "Team Luka", "manager": "Shondrae", "tagline": "Heliocentric", "playbook": "AST · PTS · 3PTM", "punt": "FG%, TO, FT%", "summary": "2nd in AST; last in FG%, TO.", "overall_rank": 8},
 {"team": "JJ's Official Team", "manager": "JJ", "tagline": "Swat & Shoot", "playbook": "3PTM · FT% · AST", "punt": "REB, ST, BLK", "summary": "Best 3PTM; last in REB.", "overall_rank": 9},
 {"team": "Nathan's Nifty Team", "manager": "Nathan", "tagline": "Balanced Boards", "playbook": "TO · FG% · AST", "punt": "BLK, FT%, REB", "summary": "2nd in TO; last in BLK.", "overall_rank": 10}
 ]
