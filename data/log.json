@@ -37,5 +37,6 @@
 {"version": "1.35", "date": "2026-11-14", "change": "Week 4 live scores, rosters and IL slots from Yahoo (Collins, Champagnie, Hayes added), injuries, news; four pending trades added."},
 {"version": "1.36", "date": "2026-11-15", "change": "Week 4 live scores; Paulo–JJ trade processed; 7 adds/drops; IL moves; injuries and news."},
 {"version": "1.37", "date": "2026-11-16", "change": "Moved to GitHub (self-updating)."},
-{"version": "1.38", "date": "2026-11-16", "change": "Hashtagbasketball stats refresh; NBA schedule; injuries; news."}
+{"version": "1.38", "date": "2026-11-16", "change": "Hashtagbasketball stats refresh; NBA schedule; injuries; news."},
+{"version": "1.39", "date": "2026-11-16", "change": "News."}
 ]
