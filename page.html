@@ -1,0 +1,1357 @@
+<style>
+#dash-root { --dash-gutter: clamp(16px, 3vw, 40px); }
+.ube { max-width: 1240px; margin-inline: auto; display: flex; flex-direction: column; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); }
+.ube-head { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--cds-gap-sm); padding-block: var(--cds-pad-lg) var(--cds-pad-sm); }
+.ube-eyebrow { display: flex; align-items: center; gap: var(--cds-gap-sm); width: min(100%, 34rem); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: .18em; text-transform: uppercase; }
+.ube-eyebrow::before, .ube-eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--color-border-line); }
+.ube-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: clamp(2.1rem, 6vw, 3.4rem); letter-spacing: -.01em; line-height: 1.05; margin: 0; text-wrap: balance; }
+.ube-take { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--cds-gap-xs); margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.ube-take > span { padding: 3px 12px; border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-panel); }
+.ube-take > span.rival { color: var(--color-bad); border-color: currentColor; background: none; }
+.ube .ube-take b { font-weight: 600; color: var(--color-fg); font-variant-numeric: tabular-nums; }
+.ube-tabs { display: flex; justify-content: center; gap: var(--cds-gap-xs); flex-wrap: wrap; border-bottom: 1px solid var(--color-border-line); }
+.ube-tab { appearance: none; background: none; border: 0; border-bottom: 2px solid transparent; padding: var(--cds-pad-sm) var(--cds-pad-md); font: inherit; color: var(--color-fg-muted); cursor: pointer; margin-bottom: -1px; }
+.ube-tab:hover { color: var(--color-fg); }
+.ube-tab[aria-selected="true"] { color: var(--color-fg); border-bottom-color: var(--color-fg); font-weight: 500; }
+.ube-tab:focus-visible, .ube-chip:focus-visible, .ube select:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.ube-page { display: flex; flex-direction: column; gap: var(--cds-gap-lg); }
+.ube-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: var(--cds-gap-md); }
+.ube-grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: var(--cds-gap-md); }
+.ube-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: flex; flex-direction: column; gap: var(--cds-gap-sm); min-width: 0; }
+.ube-card h2, .ube-card h3 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+.ube-row { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); align-items: center; flex-wrap: wrap; }
+.ube-scroll { overflow-x: auto; min-width: 0; }
+.ube table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.ube th { text-align: left; font-weight: 500; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; background: var(--color-panel); }
+.ube td { padding: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); vertical-align: middle; line-height: 1.35; }
+.ube tr:last-child td { border-bottom: 0; }
+.ube .num { text-align: right; } .ube .mid { text-align: center; }
+.ube-tall { max-height: 34rem; overflow: auto; } .ube-tall th { position: sticky; top: 0; z-index: 1; }
+.ube-muted { color: var(--color-fg-muted); } .ube-small { font-size: var(--cds-font-size-caption); }
+.ube-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); white-space: nowrap; line-height: 1.6; }
+.ube-pill.bad { color: var(--color-bad); border-color: currentColor; }
+.ube-pill.warn { color: var(--color-warn); border-color: currentColor; }
+.ube-pill.ok { color: var(--color-ok); border-color: currentColor; }
+.ube-pill.rival { color: var(--color-bad); border-color: currentColor; text-transform: uppercase; letter-spacing: .05em; }
+.ube-win { font-weight: 600; }
+.ube-mine td { background: var(--color-bg); }
+.ube-score { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-heading); }
+.ube-bar { display: flex; align-items: center; gap: var(--cds-gap-xs); justify-content: flex-end; }
+.ube-bar i { display: block; height: 8px; border-radius: 4px; background: var(--cds-chart-muted); }
+.ube-controls { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); align-items: center; }
+.ube-chip { appearance: none; font: inherit; font-size: var(--cds-font-size-caption); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg-muted); cursor: pointer; }
+.ube-chip.rival { border-color: var(--color-bad); }
+.ube-chip[aria-pressed="true"] { color: var(--color-bg); background: var(--color-fg); border-color: var(--color-fg); }
+.ube select { font: inherit; padding: 4px 8px; border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); max-width: 100%; }
+.ube-tagline { font-family: var(--font-anthropic-serif); font-style: italic; font-size: var(--cds-font-size-heading); margin: 0; }
+.ube-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; line-height: 1.1; }
+.ube-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--cds-gap-sm); }
+.ube-stat { display: flex; flex-direction: column; gap: 2px; padding: var(--cds-pad-sm) var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); }
+.ube-stat b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; }
+.ube-stat span { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.ube-cats { display: flex; flex-wrap: wrap; gap: 6px; }
+.ube-cat { font-size: var(--cds-font-size-caption); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); }
+.ube-cat.Strong { color: var(--color-ok); border-color: currentColor; font-weight: 600; }
+.ube-cat.Weak { color: var(--color-bad); border-color: currentColor; }
+.ube-matrix td.g { text-align: center; font-size: var(--cds-font-size-caption); font-weight: 600; }
+.ube-matrix td.Strong { color: var(--color-ok); } .ube-matrix td.Weak { color: var(--color-bad); } .ube-matrix td.Even { color: var(--color-fg-muted); font-weight: 400; }
+.ube a { color: inherit; text-decoration-color: var(--color-border-line); text-underline-offset: 2px; }
+.ube-fail { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 4rem; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.ube-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+.ube [data-dash-source-state=empty] { color: transparent; }
+.ube [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.ube-market td { vertical-align: top; font-size: var(--cds-font-size-caption); min-width: 9rem; white-space: pre-wrap; }
+.ube-market td:first-child { min-width: 8rem; font-size: var(--cds-font-size-body); white-space: normal; }
+.ube-market td.empty::before { content: "–"; color: var(--color-fg-muted); }
+.ube-market textarea { width: 100%; min-height: 4.5rem; font: inherit; font-size: var(--cds-font-size-caption); padding: 6px; border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); resize: vertical; box-sizing: border-box; }
+.ube-btn { appearance: none; font: inherit; font-size: var(--cds-font-size-caption); padding: 3px 10px; border-radius: var(--cds-radius); border: 1px solid var(--color-border-line); background: var(--color-bg); color: var(--color-fg); cursor: pointer; white-space: nowrap; }
+.ube-btn.primary { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.ube-btn:focus-visible, .ube-market textarea:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 1px; }
+.ube-btns { display: flex; flex-direction: column; gap: 4px; }
+@media (max-width: 640px) { .ube-hide-sm { display: none; } .ube-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mu-score { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-lg); flex-wrap: wrap; padding-block: var(--cds-pad-sm); }
+.mu-score > div { display: flex; align-items: baseline; gap: var(--cds-gap-sm); }
+.mu-score b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * 1.4); font-variant-numeric: tabular-nums; }
+.mu-name { font-size: var(--cds-font-size-body); font-weight: 500; }
+.mu-edges { display: flex; flex-direction: column; gap: 6px; }
+.mu-row { display: grid; grid-template-columns: 3.2rem 4.2rem 1fr 4.2rem 5.6rem; gap: var(--cds-gap-sm); align-items: center; font-variant-numeric: tabular-nums; font-size: var(--cds-font-size-body); }
+.mu-row .v { text-align: center; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.mu-row .v.lead { color: var(--color-fg); font-weight: 600; }
+.mu-track { position: relative; height: 12px; border-radius: 6px; background: var(--color-bg); border: 1px solid var(--color-border-line); }
+.mu-track::after { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: var(--cds-chart-axis); }
+.mu-bar { position: absolute; top: 1px; bottom: 1px; border-radius: 5px; }
+.mu-bar.a { right: 50%; background: var(--color-ok); }
+.mu-bar.b { left: 50%; background: var(--color-bad); }
+.mu-bar.t { background: var(--cds-chart-muted); }
+.mu-cat { font-weight: 500; font-size: var(--cds-font-size-caption); }
+.mu-head-row { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+#mu-tips { display: flex; flex-direction: column; gap: 4px; padding-top: var(--cds-pad-sm); border-top: 1px solid var(--color-border-line); }
+#mu-tips:empty { display: none; }
+.sc-h { margin: 0 0 6px; font-size: var(--cds-font-size-caption) !important; color: var(--color-fg-muted); font-weight: 500 !important; text-transform: uppercase; letter-spacing: .05em; }
+.sc-item { padding: 6px 0; border-bottom: 1px solid var(--color-border-line); font-size: var(--cds-font-size-body); line-height: 1.35; }
+.sc-item:last-child { border-bottom: 0; }
+.ta-list { display: flex; flex-direction: column; gap: 2px; max-height: 18rem; overflow: auto; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: 6px; background: var(--color-bg); }
+.ta-list label { display: flex; gap: 8px; align-items: center; padding: 3px 4px; border-radius: 4px; cursor: pointer; font-size: var(--cds-font-size-body); }
+.ta-list label:hover { background: var(--color-panel); }
+.ta-list input:checked + span { font-weight: 600; }
+.ta-verdict { font-family: var(--font-anthropic-serif); font-size: var(--cds-font-size-heading); margin: var(--cds-gap-sm) 0 0; line-height: 1.4; }
+.ta-up { color: var(--color-ok); font-weight: 600; } .ta-down { color: var(--color-bad); font-weight: 600; }
+@media (max-width: 640px) { .mu-row { grid-template-columns: 2.8rem 3.2rem 1fr 3.2rem; } .mu-row .pillcol { display: none; } }
+.ube tr.ube-cut td { border-bottom: 2px solid var(--color-fg); }
+.ube-radar { width: 100%; max-width: 420px; margin-inline: auto; min-height: 300px; }
+.ube-radar svg { display: block; overflow: visible; }
+.ube-radar .grid { fill: none; stroke: var(--cds-chart-grid); }
+.ube-radar .mid { fill: none; stroke: var(--cds-chart-axis); stroke-dasharray: 3 3; }
+.ube-radar .spoke { stroke: var(--cds-chart-grid); }
+.ube-radar .shape { fill-opacity: .18; stroke-width: 2; stroke-linejoin: round; }
+.ube-radar .lbl { font-size: 12px; fill: var(--color-fg); font-weight: 500; }
+.ube-radar .rk { font-size: 11px; fill: var(--color-fg-muted); }
+.ube-btn.primary { background: var(--color-fg); color: var(--color-bg); border-color: var(--color-fg); }
+.ube-btn:disabled { opacity: .5; cursor: default; }
+.ube-btn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.sl-layout { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: var(--cds-gap-md); align-items: stretch; }
+#sl-week-card { flex: 1 1 auto; }
+#sl-week-card .sl-bars { flex: 1 1 auto; justify-content: space-between; }
+#sl-guide-card .ube-scroll { flex: 1 1 auto; }
+.sl-left { display: flex; flex-direction: column; gap: var(--cds-gap-md); min-width: 0; }
+@media (max-width: 1100px) { .sl-layout { grid-template-columns: minmax(0, 1fr); } }
+.sl-score { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--cds-gap-md); padding-block: var(--cds-pad-xs); }
+.sl-score > div { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; min-width: 0; }
+.sl-score > div:first-child b { color: var(--color-ok); } .sl-score > div:last-child b { color: var(--color-bad); }
+.sl-score b { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: calc(var(--cds-font-size-title) * 1.4); line-height: 1; font-variant-numeric: tabular-nums; }
+.sl-score .mid { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.sl-bars { display: flex; flex-direction: column; gap: 7px; }
+.sl-bar-row { display: grid; grid-template-columns: 3.2rem 1fr 7.6rem; gap: var(--cds-gap-sm); align-items: center; }
+.sl-cat { font-size: var(--cds-font-size-caption); font-weight: 500; color: var(--color-fg); }
+.sl-tracks { display: flex; flex-direction: column; gap: 3px; }
+.sl-track { height: 7px; border-radius: 4px; background: var(--color-bg); border: 1px solid var(--color-border-line); overflow: hidden; }
+.sl-track i { display: block; height: 100%; border-radius: 3px; background: var(--cds-chart-muted); opacity: .55; }
+.sl-track i.lead-a { background: var(--color-ok); opacity: 1; }
+.sl-track i.lead-b { background: var(--color-bad); opacity: 1; }
+.sl-v { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sl-v b { color: var(--color-fg); font-weight: 600; }
+.sl-v .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-left: 6px; vertical-align: middle; background: var(--color-warn); }
+.sl-v .dot.a { background: var(--color-ok); } .sl-v .dot.b { background: var(--color-bad); }
+.sl-nba-row { display: flex; gap: var(--cds-gap-sm); align-items: flex-start; padding-block: 8px; border-bottom: 1px solid var(--color-border-line); }
+.sl-nba-row:last-child { border-bottom: 0; }
+.sl-n { flex: none; width: 2rem; height: 2rem; display: grid; place-items: center; border-radius: 6px; border: 1px solid var(--color-border-line); font-weight: 600; }
+.sl-n.most { color: var(--color-ok); border-color: currentColor; }
+.sl-n.fewest { color: var(--color-bad); border-color: currentColor; }
+.sl-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sl-chip { font-size: var(--cds-font-size-caption); font-weight: 600; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--color-border-line); color: var(--color-fg-muted); }
+.sl-chip.on { color: var(--color-fg); border-color: var(--color-ok); }
+.sl-grid th.day, .sl-grid td.day { text-align: center; min-width: 2.6rem; padding-inline: 4px; }
+.sl-grid td { padding-block: 6px; }
+.sl-grid th.today, .sl-grid td.today { background: color-mix(in srgb, var(--color-ok) 9%, transparent); }
+.sl-grid th.today, .sl-grid th.today .ube-muted { color: var(--color-ok); }
+.sl-grid td.past { opacity: .45; }
+.sl-grid td.pos, .sl-grid th.pos { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); width: 2.5rem; }
+.sl-grid td.pl { font-weight: 500; min-width: 9rem; }
+.sl-grid tr.il td { opacity: .55; }
+.sl-grid .g { font-size: var(--cds-font-size-caption); font-weight: 600; }
+.sl-grid .g.out { color: var(--color-bad); text-decoration: line-through; }
+.sl-grid td.wk { font-weight: 600; }
+.sl-out { font-size: 11px; padding: 0 7px; border-radius: 999px; border: 1px solid currentColor; color: var(--color-bad); line-height: 1.5; }
+.set-grid .ube-card { gap: var(--cds-gap-md); }
+.set-grid h3 { font-family: var(--font-anthropic-serif); font-weight: 500 !important; font-size: var(--cds-font-size-heading); color: var(--color-fg); padding-bottom: var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); letter-spacing: .005em; }
+.set-grid ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); line-height: 1.55; color: var(--color-fg-muted); }
+.set-grid li { position: relative; padding-left: 1rem; }
+.set-grid li::before { content: ""; position: absolute; left: 0; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: var(--color-fg-muted); opacity: .6; }
+.set-grid li b, .set-grid li a { color: var(--color-fg); font-weight: 600; }
+#p-settings > .ube-card:first-child h2 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); }
+</style>
+
+<div class="ube">
+  <header class="ube-head" id="top">
+    <div class="ube-eyebrow"><span>UBE Yahoo Fantasy · 10 teams · 9-cat H2H</span></div>
+    <h1 class="ube-title">UBE League Hub</h1>
+    <div class="ube-take" id="ube-take"></div>
+  </header>
+
+  <nav class="ube-tabs" role="tablist" aria-label="Hub sections">
+    <button class="ube-tab" role="tab" id="overview" aria-controls="p-overview">Overview</button>
+    <button class="ube-tab" role="tab" id="matchup" aria-controls="p-matchup">Matchup</button>
+    <button class="ube-tab" role="tab" id="slate" aria-controls="p-slate">Weekly Slate</button>
+    <button class="ube-tab" role="tab" id="rosters" aria-controls="p-rosters">Rosters</button>
+    <button class="ube-tab" role="tab" id="managers" aria-controls="p-managers">Managers</button>
+    <button class="ube-tab" role="tab" id="trades" aria-controls="p-trades">Trades</button>
+    <button class="ube-tab" role="tab" id="news" aria-controls="p-news">News &amp; injuries</button>
+    <button class="ube-tab" role="tab" id="settings" aria-controls="p-settings">Settings</button>
+  </nav>
+
+  <!-- OVERVIEW -->
+  <section class="ube-page" id="p-overview" role="tabpanel" aria-labelledby="overview">
+    <div class="ube-grid">
+      <div class="ube-card" id="standings-card">
+        <div class="ube-row">
+          <h2 id="standings-title">Standings</h2>
+          <div class="ube-controls" role="group" aria-label="Standings view">
+            <button class="ube-chip" id="view-standings" aria-pressed="true">W-L-T</button>
+            <button class="ube-chip" id="view-power" aria-pressed="false">Power rankings</button>
+          </div>
+        </div>
+        <p class="ube-small ube-muted" id="power-note" hidden style="margin:0">Ranked by categories won per week (13 players, IL excluded) · playoff odds from 2,000 simulated seasons. See Settings.</p>
+        <div class="ube-scroll" id="standings-view">
+          <p class="ube-small ube-muted" style="margin:0 0 6px">Top 6 make the playoffs (line below 6th).</p>
+          <table id="standings-table" data-source="standings" data-row-key="team">
+            <thead><tr>
+              <th data-field="rank" class="num">#</th>
+              <th data-field="team">Team</th>
+              <th data-field="record" class="num">W-L-T</th>
+              <th data-field="pct" class="num">Pct</th>
+              <th data-field="gb" class="num">GB</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="ube-scroll" id="power-view" hidden>
+          <table id="power-table" data-source="power" data-row-key="team">
+            <thead><tr>
+              <th data-field="power_rank" class="num">#</th>
+              <th data-field="team">Team</th>
+              <th data-field="cats_week" class="num">Cats/wk</th>
+              <th data-field="proj_record" class="num ube-hide-sm">Proj. record</th>
+              <th data-field="playoff_odds" class="num">Playoff odds</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="ube-card" id="matchups-card">
+        <div class="ube-row">
+          <h2 id="matchups-title">Matchups</h2>
+          <select id="week-pick" aria-label="Week"></select>
+        </div>
+        <div class="ube-scroll">
+          <table id="matchups-table" data-source="schedule" data-row-key="matchup">
+            <thead><tr>
+              <th data-field="team_a">Team</th>
+              <th data-field="cats_a" class="mid">Cats</th>
+              <th data-field="cats_b" class="mid">Cats</th>
+              <th data-field="team_b">Opponent</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="ube-card" id="calendar-card">
+      <div class="ube-row"><h2>Season</h2><span class="ube-small ube-muted">Red = rivalry week · Trade deadline Mar 4 · Playoffs Wk 20–21, Finals Wk 22 (6 teams, ends Apr 4) · Prize pool: 1st 1,500 · 2nd 1,000 · 3rd 500</span></div>
+      <div class="ube-controls" id="calendar-strip" data-source="schedule"></div>
+    </div>
+  </section>
+
+  <!-- MATCHUP -->
+  <section class="ube-page" id="p-matchup" role="tabpanel" aria-labelledby="matchup" hidden>
+    <div class="ube-card" id="mu-head" data-source="schedule players nba_games">
+      <div class="ube-row">
+        <h2 id="mu-title">Matchup preview</h2>
+        <div class="ube-controls">
+          <select id="mu-week" aria-label="Week"></select>
+          <select id="mu-a" aria-label="Your team"></select>
+          <span class="ube-small ube-muted">vs</span>
+          <select id="mu-b" aria-label="Opponent"></select>
+        </div>
+      </div>
+      <div class="mu-score">
+        <div><span class="mu-name" id="mu-an">—</span><b id="mu-as">—</b></div>
+        <span class="ube-muted ube-small" id="mu-mid">projected</span>
+        <div><b id="mu-bs">—</b><span class="mu-name" id="mu-bn">—</span></div>
+      </div>
+      <p class="ube-small ube-muted" id="mu-note" style="margin:0"></p>
+    </div>
+
+    <div class="ube-card" id="mu-edges-card">
+      <div class="ube-row"><h2>Category edge</h2><span class="ube-small ube-muted">Bar points to the team with the edge</span></div>
+      <div id="mu-edges" class="mu-edges" data-source="players nba_games"></div>
+      <div id="mu-tips" class="ube-small"></div>
+    </div>
+
+    <div class="ube-card" id="mu-scout" data-source="players managers">
+      <div class="ube-row"><h2 id="sc-title">Scouting report</h2><span class="ube-pill" id="sc-play">—</span></div>
+      <p class="ube-tagline" id="sc-tag">—</p>
+      <div class="ube-grid3">
+        <div><h3 class="sc-h">Top players</h3><div id="sc-top"></div></div>
+        <div><h3 class="sc-h">Injuries</h3><div id="sc-inj"></div></div>
+        <div><h3 class="sc-h">How to beat them</h3><div id="sc-beat"></div></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- WEEKLY SLATE -->
+  <section class="ube-page" id="p-slate" role="tabpanel" aria-labelledby="slate" hidden>
+    <div class="ube-row">
+      <h2 class="ube-big" id="sl-title">Weekly slate</h2>
+      <div class="ube-controls">
+        <select id="sl-week" aria-label="Week"></select>
+        <select id="sl-team" aria-label="Team"></select>
+      </div>
+    </div>
+    <div class="sl-layout">
+      <div class="sl-left">
+        <div class="ube-card" id="sl-week-card" data-source="players nba_games schedule">
+          <div class="ube-row"><h2 id="sl-eyebrow">Your week</h2><span class="ube-small ube-muted">Bar shows who leads</span></div>
+          <div class="sl-score">
+            <div><span class="mu-name" id="sl-me-short">—</span><b id="sl-gl-a">—</b></div>
+            <div class="mid"><span>games left</span><span class="ube-pill" id="sl-proj">—</span></div>
+            <div><span class="mu-name" id="sl-opp-short">Opp</span><b id="sl-gl-b">—</b></div>
+          </div>
+          <div id="sl-bars" class="sl-bars"></div>
+          <p class="ube-small ube-muted" id="sl-note" style="margin:0"></p>
+        </div>
+        <div class="ube-card" id="sl-nba-card" data-source="nba_games">
+          <div class="ube-row"><h2>Games per NBA team</h2><span class="ube-small ube-muted">Outlined = on this roster</span></div>
+          <div id="sl-nba"></div>
+        </div>
+      </div>
+      <div class="ube-card" id="sl-guide-card" data-source="rosters players nba_games">
+        <div class="ube-row"><h2>Roster guide</h2><span class="ube-small ube-muted">Daily opponents</span></div>
+        <div class="ube-scroll"><table class="sl-grid" id="sl-grid"></table></div>
+        <p class="ube-small ube-muted" style="margin:0">Opponent shown for each game · @ = away · red = injured that day · IL = injured list (not counted in ranks)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="ube-page" id="p-settings" role="tabpanel" aria-labelledby="settings" hidden>
+    <div class="ube-card">
+      <h2>Hub settings</h2>
+      <p class="ube-small ube-muted" style="margin:0">How every rank, projection and tool on this hub is calculated.</p>
+    </div>
+    <div class="ube-grid set-grid" id="set-grid">
+      <div class="ube-card"><h3>Stats source</h3><ul>
+        <li>Player stats: <a href="https://hashtagbasketball.com/fantasy-basketball-rankings" target="_blank" rel="noopener">Hashtagbasketball Fantasy Basketball Rankings</a>, 2026-27 per-game averages, our 9 categories only (FG%, FT%, 3PTM, PTS, REB, AST, ST, BLK, TO).</li>
+        <li>Player value = Hashtagbasketball's 9-cat total.</li>
+        <li>Refreshed every Monday. Last refresh: <b id="set-htb">—</b>.</li>
+        <li>Players outside Hashtagbasketball's top 200: <span id="set-fallback">—</span>. They keep their previous per-game estimate and rank below #200.</li>
+        <li>Rosters, standings and scores: Yahoo. NBA games: official NBA schedule. Injuries and news: daily.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Power rankings</h3><ul>
+        <li>Counts up to <b id="set-count">13</b> players per team: the 10 starters and 3 bench spots.</li>
+        <li>Players in an IL slot are not counted. Same rule for every team.</li>
+        <li>Rank = categories won per week: each team's expected category wins against each of the other 9 teams, averaged.</li>
+        <li>Ties broken by playoff odds.</li>
+        <li>Playoff odds: the rest of the regular season (through Week 19) played <b id="set-sims">2,000</b> times from the current Yahoo standings. Odds = share of seasons finishing top 6. Projected record = average record.</li>
+        <li>Each simulated week allows for swings in form (weekly and season-long), so odds are not all-or-nothing.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Category ranks</h3><ul>
+        <li>Same counted players as power rankings (no IL players).</li>
+        <li>Counting stats: sum of per-game averages. FG% = total FGM ÷ total FGA; FT% = total FTM ÷ total FTA.</li>
+        <li>1 = best. TO: fewest is best.</li>
+        <li>Strong = 1st–3rd · Even = 4th–7th · Weak = 8th–10th.</li>
+        <li>Win chance per category uses typical weekly variation: <span id="set-cv">—</span>.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Category profile and team cards</h3><ul>
+        <li>Radar (Rosters tab) shows the category ranks above. Outer edge = 1st, dashed ring = league middle.</li>
+        <li>Team card tagline = the team's playbook name.</li>
+        <li>Green pill = top 3 categories. Red pill = punts: categories ranked 8th–10th (up to 3), otherwise the single weakest.</li>
+        <li>Description = best and last categories only.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Weekly matchup prediction</h3><ul>
+        <li>Uses the real NBA schedule for the week.</li>
+        <li>Each game day, the 10 highest-value players with a game start.</li>
+        <li>Injured players sit until their expected return date. IL players count only from their return date.</li>
+        <li>Projected totals = sum of per-game stats across all starts.</li>
+        <li>If a week's schedule isn't loaded, it compares per-game averages instead.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Category edge</h3><ul>
+        <li>Compares the two projected weekly totals in each category.</li>
+        <li>Toss-up if counting stats are within 3%, FG% within .0036, FT% within .0075.</li>
+        <li>Otherwise the edge goes to the better total (TO: fewer wins).</li>
+        <li>Bar length shows the size of the edge.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Trade analyzer</h3><ul>
+        <li>Moves the selected players between the two teams.</li>
+        <li>Recounts category totals with the same 13-player, no-IL rule.</li>
+        <li>Shows category rank changes and power rank (by categories won per week, without the playoff simulation).</li>
+        <li>Flags roster size over 16 and injured players in the deal.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Weekly slate</h3><ul>
+        <li>Every NBA game for each rostered player, Monday to Sunday.</li>
+        <li>Games left counts starts from today on.</li>
+        <li>Starts are capped at 10 per day, the size of the starting lineup.</li>
+        <li>Projected week uses the matchup prediction above.</li>
+      </ul></div>
+      <div class="ube-card"><h3>Update schedule</h3><ul>
+        <li>Daily at 2:30 PM (Manila), automatic: Yahoo scores, standings, rosters, IL slots and pending trades; injuries; news.</li>
+        <li>Monday: Hashtagbasketball stats refresh, category ranks, power rankings, NBA schedule for the next weeks.</li>
+        <li>Updates run on their own. No manual sync needed.</li>
+      </ul></div>
+    </div>
+    <div class="ube-card" id="log-card">
+      <h2>Changelog</h2>
+      <table id="log-table" data-source="log" data-row-key="version">
+        <thead><tr><th data-field="version">Ver.</th><th data-field="date">Date</th><th data-field="change">Change</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ROSTERS -->
+  <section class="ube-page" id="p-rosters" role="tabpanel" aria-labelledby="rosters" hidden>
+    <div class="ube-card" id="roster-head">
+      <div class="ube-row">
+        <h2 class="ube-big" id="r-team" data-source="managers" data-field="team">—</h2>
+        <select id="r-pick" aria-label="Team"></select>
+      </div>
+      <div class="ube-row">
+        <p class="ube-tagline" id="r-tag" data-source="managers" data-field="tagline">—</p>
+        <span class="ube-pill" id="r-play" data-source="managers" data-field="playbook">—</span>
+      </div>
+      <div class="ube-stats">
+        <div class="ube-stat"><b id="r-g" data-source="roster_build" data-field="guards">—</b><span>Guards</span></div>
+        <div class="ube-stat"><b id="r-w" data-source="roster_build" data-field="wings">—</b><span>Wings</span></div>
+        <div class="ube-stat"><b id="r-b" data-source="roster_build" data-field="bigs">—</b><span>Bigs</span></div>
+        <div class="ube-stat"><b id="r-i" data-source="roster_build" data-field="injured">—</b><span>Injured</span></div>
+      </div>
+      <div class="ube-cats" id="r-cats" data-source="profiles"></div>
+    </div>
+    <div class="ube-card" id="radar-card">
+      <div class="ube-row"><h2>Category profile</h2><span class="ube-small ube-muted">League rank in each category · outer edge = 1st · dashed ring = league middle</span></div>
+      <div id="radar" class="ube-radar" data-source="profiles"></div>
+    </div>
+    <div class="ube-grid3" id="r-groups">
+      <div class="ube-card" id="grp-guards"><h3>Guards</h3><table data-source="rosters" data-row-key="player"><thead><tr><th data-field="player">Player</th><th data-field="pos">Pos</th><th data-field="status">Status</th></tr></thead><tbody></tbody></table></div>
+      <div class="ube-card" id="grp-wings"><h3>Wings</h3><table data-source="rosters" data-row-key="player"><thead><tr><th data-field="player">Player</th><th data-field="pos">Pos</th><th data-field="status">Status</th></tr></thead><tbody></tbody></table></div>
+      <div class="ube-card" id="grp-bigs"><h3>Bigs</h3><table data-source="rosters" data-row-key="player"><thead><tr><th data-field="player">Player</th><th data-field="pos">Pos</th><th data-field="status">Status</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- MANAGERS -->
+  <section class="ube-page" id="p-managers" role="tabpanel" aria-labelledby="managers" hidden>
+    <div class="ube-card" id="matrix-card">
+      <div class="ube-row"><h2>Category ranks</h2><span class="ube-small ube-muted">1 = best · TO: fewest is best · 13 players, IL excluded · Hashtagbasketball per-game stats</span></div>
+      <div class="ube-scroll ube-matrix" id="matrix" data-source="profiles managers"></div>
+    </div>
+    <div class="ube-grid" id="mgr-grid"></div>
+  </section>
+
+  <!-- TRADES -->
+  <section class="ube-page" id="p-trades" role="tabpanel" aria-labelledby="trades" hidden>
+    <div class="ube-card" id="trades-card">
+      <div class="ube-row"><h2>Pending trades</h2><span class="ube-small ube-muted">Reviewed by league vote · Deadline Mar 4, 2027</span></div>
+      <div class="ube-scroll">
+        <table id="trades-table" data-source="trades" data-row-key="deal">
+          <thead><tr>
+            <th data-field="team_a">Team</th>
+            <th data-field="a_gets">Receives</th>
+            <th data-field="team_b">Team</th>
+            <th data-field="b_gets">Receives</th>
+            <th data-field="processes">Processes</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="ube-card" id="trade-analyzer" data-source="players trades">
+      <div class="ube-row">
+        <h2>Trade analyzer</h2>
+        <div class="ube-controls">
+          <select id="ta-a" aria-label="Team A"></select>
+          <span class="ube-small ube-muted">with</span>
+          <select id="ta-b" aria-label="Team B"></select>
+          <button class="ube-btn" id="ta-pending">Load pending trade</button>
+          <button class="ube-btn" id="ta-clear">Clear</button>
+        </div>
+      </div>
+      <div class="ube-grid">
+        <div><h3 class="sc-h" id="ta-a-h">Sends</h3><div class="ta-list" id="ta-a-list"></div></div>
+        <div><h3 class="sc-h" id="ta-b-h">Sends</h3><div class="ta-list" id="ta-b-list"></div></div>
+      </div>
+      <div id="ta-result"></div>
+    </div>
+    <div class="ube-card" id="market-card">
+      <div class="ube-row"><h2>Trade market</h2><span class="ube-small ube-muted" id="mk-status"></span></div>
+      <div class="ube-scroll" data-source="managers">
+        <table id="market-table" class="ube-market">
+          <thead><tr><th>Team</th><th>Trade block</th><th>Untouchables</th><th>Targets</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWS -->
+  <section class="ube-page" id="p-news" role="tabpanel" aria-labelledby="news" hidden>
+    <div class="ube-card" id="injury-card">
+      <div class="ube-row"><h2>Injuries</h2><select id="inj-team" aria-label="Filter injuries by team"></select></div>
+      <div class="ube-scroll">
+        <table id="injury-table" data-source="injuries" data-row-key="player">
+          <thead><tr>
+            <th data-field="player">Player</th>
+            <th data-field="status">Status</th>
+            <th data-field="est_return">Return</th>
+            <th data-field="ube_team" class="ube-hide-sm">UBE team</th>
+            <th data-field="detail" class="ube-hide-sm">Injury</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="ube-card" id="news-card">
+      <h2>NBA wire</h2>
+      <div class="ube-scroll">
+        <table id="news-table" data-source="news" data-row-key="headline">
+          <thead><tr><th data-field="date">Date</th><th data-field="headline">Headline</th><th data-field="angle">Fantasy angle</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+dash.calc('roster_build', {
+  title: 'Roster construction',
+  description: 'Players per role and injured players for each team.',
+  inputs: ['rosters'],
+  fn: (rosters) => [...new Set(rosters.map((r) => r.team))].map((team) => {
+    const t = rosters.filter((r) => r.team === team);
+    return { team, guards: t.filter((r) => r.role === 'Guards').length, wings: t.filter((r) => r.role === 'Wings').length, bigs: t.filter((r) => r.role === 'Bigs').length, injured: t.filter((r) => r.status !== '').length };
+  }),
+});
+
+window.ube = {
+  mine: "The Haliban",
+  el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; },
+  fail(tbody, cols) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = cols; td.appendChild(ube.el('div', 'ube-fail', 'Failed to load')); tr.appendChild(td); tbody.replaceChildren(tr); },
+  ready(id) { const d = dash.data(id); return d.status === 'ok' ? d.data : null; },
+  err(id) { return dash.data(id).status === 'error'; },
+  enc(v) { return String(v).replace(/%/g, '%25').replace(/&/g, '%26').replace(/=/g, '%3D'); },
+  pill(s) { return ube.el('span', 'ube-pill ' + (/^out/i.test(s) ? 'bad' : s ? 'warn' : ''), s); },
+};
+
+(() => {
+  const tabs = [...document.querySelectorAll('.ube-tab')];
+  const show = (id, link) => {
+    tabs.forEach((t) => { const on = t.id === id; t.setAttribute('aria-selected', on ? 'true' : 'false'); t.tabIndex = on ? 0 : -1; document.getElementById(t.getAttribute('aria-controls')).hidden = !on; });
+    if (link) dash.setLink(id);
+  };
+  tabs.forEach((t) => t.addEventListener('click', () => show(t.id, true)));
+  const want = location.hash.slice(1);
+  show(tabs.some((t) => t.id === want) ? want : 'overview', false);
+})();
+
+dash.onData(() => {
+  const take = document.getElementById('ube-take');
+  const sd = dash.data('schedule');
+  take.textContent = '';
+  if (sd.status === 'ok') {
+    const short = (n) => n === ube.mine ? 'Allen' : n.replace(/[’']s .*$/, '');
+    const mineRows = sd.data.filter((r) => r.team_a === ube.mine || r.team_b === ube.mine);
+    const fin = mineRows.filter((r) => r.status === 'Final').sort((a, b) => b.week - a.week)[0];
+    const live = mineRows.find((r) => r.status === 'In progress');
+    [[fin, 'final'], [live, 'live']].forEach(([r, lab]) => {
+      if (!r) return;
+      const me = r.team_a === ube.mine;
+      const s = ube.el('span', r.rivalry ? 'rival' : '');
+      const mk = (f) => { const b = document.createElement('b'); b.dataset.source = 'schedule'; b.dataset.field = f; b.dataset.where = 'matchup=' + r.matchup; return b; };
+      s.append('Week ' + r.week + (r.rivalry ? ' rivalry ' : ' ') + lab + ' · Allen ', mk(me ? 'cats_a' : 'cats_b'), '–', mk(me ? 'cats_b' : 'cats_a'));
+      const ties = 9 - (r.cats_a || 0) - (r.cats_b || 0);
+      if (r.cats_a != null && ties > 0) s.append('–' + ties);
+      s.append(' ' + short(me ? r.team_b : r.team_a));
+      take.append(s);
+    });
+  }
+  document.querySelectorAll('.ube-head [data-source]').forEach((b) => {
+    const d = dash.data(b.dataset.source);
+    if (d.status !== 'ok') { b.textContent = '—'; return; }
+    let row = d.data[0];
+    if (b.dataset.where) { const [k, v] = b.dataset.where.split('='); row = d.data.find((r) => String(r[k]) === v); }
+    const val = row ? row[b.dataset.field] : null;
+    b.textContent = val == null ? '—' : String(val);
+  });
+});
+</script>
+
+<script>
+/* Power rankings */
+/* UBE power model: shared by the page and the build script */
+const UBE_RANK = (() => {
+  const CATS = ['FG%', 'FT%', '3PTM', 'PTS', 'REB', 'AST', 'ST', 'BLK', 'TO'];
+  const KEY = { '3PTM': 'tpm', PTS: 'pts', REB: 'reb', AST: 'ast', ST: 'stl', BLK: 'blk', TO: 'tov' };
+  const CV = { '3PTM': 0.14, PTS: 0.08, REB: 0.08, AST: 0.10, ST: 0.18, BLK: 0.22, TO: 0.12 };
+  const PCT_SD = { 'FG%': 0.016, 'FT%': 0.028 };
+  const COUNT = 13; const SIMS = 2000; const WEEK_SWING = 0.5; const SEASON_SWING = 0.25; const LAST_WEEK = 19; const SPOTS = 6;
+  // Counted players: everyone not in a Yahoo IL slot (avail = 1), best 13 by value.
+  const counted = (ps) => ps.filter((p) => p.avail > 0).sort((a, b) => b.value - a.value).slice(0, COUNT);
+  function totals(ps) {
+    const t = counted(ps); const s = (k) => t.reduce((x, p) => x + p[k], 0);
+    const out = { 'FG%': s('fgm') / s('fga'), 'FT%': s('ftm') / s('fta'), n: t.length };
+    Object.entries(KEY).forEach(([c, k]) => { out[c] = s(k); });
+    return out;
+  }
+  const erf = (x) => { const s = Math.sign(x); x = Math.abs(x); const t = 1 / (1 + 0.3275911 * x); const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x); return s * y; };
+  const phi = (z) => 0.5 * (1 + erf(z / Math.SQRT2));
+  // Probability team A wins category c in a week against team B.
+  function zWin(c, a, b) {
+    let d = a - b; let sd;
+    if (PCT_SD[c]) sd = PCT_SD[c] * Math.SQRT2;
+    else { sd = CV[c] * Math.sqrt(a * a + b * b); if (c === 'TO') d = -d; }
+    return sd > 0 ? d / sd : 0;
+  }
+  const pWin = (c, a, b) => phi(zWin(c, a, b));
+  function byTeam(players) { const m = {}; players.forEach((p) => { (m[p.team] = m[p.team] || []).push(p); }); return m; }
+  function profiles(players) {
+    const g = byTeam(players); const teams = Object.keys(g); const T = {}; teams.forEach((t) => { T[t] = totals(g[t]); });
+    const rows = [];
+    teams.forEach((t) => CATS.forEach((c) => {
+      const rank = 1 + teams.filter((u) => (c === 'TO' ? T[u][c] < T[t][c] : T[u][c] > T[t][c])).length;
+      const v = T[t][c];
+      rows.push({ team: t, cat: c, rank, value: c.includes('%') ? Math.round(v * 1000) / 1000 : Math.round(v * 10) / 10, grade: rank <= 3 ? 'Strong' : rank >= 8 ? 'Weak' : 'Even', players: T[t].n });
+    }));
+    return rows;
+  }
+  function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function power(players, schedule, standings) {
+    const g = byTeam(players); const teams = Object.keys(g); const T = {}; teams.forEach((t) => { T[t] = totals(g[t]); });
+    const Z = {}; const P = {};
+    teams.forEach((a) => { Z[a] = {}; P[a] = {}; teams.forEach((b) => { if (a !== b) { Z[a][b] = CATS.map((c) => zWin(c, T[a][c], T[b][c])); P[a][b] = Z[a][b].map(phi); } }); });
+    const cw = {}; teams.forEach((a) => { const o = teams.filter((b) => b !== a); cw[a] = o.reduce((s, b) => s + P[a][b].reduce((x, y) => x + y, 0), 0) / o.length; });
+    const left = schedule.filter((r) => r.status !== 'Final' && r.week <= LAST_WEEK && P[r.team_a] && P[r.team_b]);
+    const base = {}; teams.forEach((t) => { const s = standings.find((r) => r.team === t) || {}; base[t] = [s.w || 0, s.l || 0, s.t || 0]; });
+    const rand = rng(2026); const made = {}; const sumW = {}; const sumL = {}; const sumT = {};
+    teams.forEach((t) => { made[t] = 0; sumW[t] = 0; sumL[t] = 0; sumT[t] = 0; });
+    const normal = () => Math.sqrt(-2 * Math.log(1 - rand())) * Math.cos(2 * Math.PI * rand());
+    for (let i = 0; i < SIMS; i += 1) {
+      const rec = {}; teams.forEach((t) => { rec[t] = base[t].slice(); });
+      const form = {}; teams.forEach((t) => { form[t] = SEASON_SWING * normal(); });
+      left.forEach((m) => { const shift = form[m.team_a] - form[m.team_b] + WEEK_SWING * normal(); Z[m.team_a][m.team_b].forEach((z) => { if (rand() < phi(z + shift)) { rec[m.team_a][0] += 1; rec[m.team_b][1] += 1; } else { rec[m.team_b][0] += 1; rec[m.team_a][1] += 1; } }); });
+      const order = teams.map((t) => { const [w, l, d] = rec[t]; return { t, pct: (w + 0.5 * d) / Math.max(1, w + l + d), r: rand() }; }).sort((x, y) => y.pct - x.pct || x.r - y.r);
+      order.slice(0, SPOTS).forEach((x) => { made[x.t] += 1; });
+      teams.forEach((t) => { sumW[t] += rec[t][0]; sumL[t] += rec[t][1]; sumT[t] += rec[t][2]; });
+    }
+    const rows = teams.map((t) => ({
+      team: t,
+      cats_week: Math.round(cw[t] * 100) / 100,
+      playoff_odds: Math.round((made[t] / SIMS) * 1000) / 10,
+      proj_w: Math.round(sumW[t] / SIMS), proj_l: Math.round(sumL[t] / SIMS), proj_t: Math.round(sumT[t] / SIMS),
+    }));
+    rows.forEach((r) => { r.proj_record = r.proj_w + '-' + r.proj_l + (r.proj_t ? '-' + r.proj_t : ''); });
+    rows.sort((x, y) => y.cats_week - x.cats_week || y.playoff_odds - x.playoff_odds);
+    return rows.map((r, i) => ({ ...r, power_rank: i + 1 }));
+  }
+  // Power rank from category totals alone (trade analyzer): expected cats a week vs the other 9.
+  function catsWeek(aggs) {
+    const teams = Object.keys(aggs); const out = {};
+    teams.forEach((a) => { const o = teams.filter((b) => b !== a); out[a] = o.reduce((s, b) => s + CATS.reduce((x, c) => x + pWin(c, aggs[a][c], aggs[b][c]), 0), 0) / o.length; });
+    return out;
+  }
+  return { CATS, KEY, COUNT, SIMS, WEEK_SWING, SEASON_SWING, CV, PCT_SD, counted, totals, pWin, profiles, power, catsWeek };
+})();
+window.UBE_RANK = UBE_RANK;
+
+dash.calc('profiles', {
+  title: 'Category ranks',
+  description: 'Each team ranked 1-10 in the 9 categories from the per-game totals of its counted players (up to 13, IL excluded). FG%/FT% from total makes and attempts; TO fewest is best.',
+  inputs: ['players'],
+  fn: (players) => UBE_RANK.profiles(players),
+});
+dash.calc('power', {
+  title: 'Power rankings',
+  description: 'Ranked by expected categories won per week against the other 9 teams; ties broken by playoff odds from 2,000 simulated seasons of the remaining regular season.',
+  inputs: ['players', 'schedule', 'standings'],
+  fn: (players, schedule, standings) => UBE_RANK.power(players, schedule, standings),
+});
+(() => {
+  const tb = document.querySelector('#power-table tbody');
+  dash.onData(() => {
+    const p = ube.ready('power');
+    if (ube.err('players')) { ube.fail(tb, 5); return; }
+    if (!p) return;
+    tb.replaceChildren(...p.map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.team; if (r.team === ube.mine) tr.className = 'ube-mine';
+      tr.append(ube.el('td', 'num', String(r.power_rank)), ube.el('td', r.team === ube.mine ? 'ube-win' : '', r.team),
+        ube.el('td', 'num', d3.format('.1f')(r.cats_week)), ube.el('td', 'num ube-hide-sm', r.proj_record), ube.el('td', 'num', d3.format('.0f')(r.playoff_odds) + '%'));
+      return tr;
+    }));
+  });
+})();
+
+/* Standings view toggle */
+(() => {
+  const views = { standings: ['standings-view', 'Standings'], power: ['power-view', 'Power rankings'] };
+  const btns = { standings: document.getElementById('view-standings'), power: document.getElementById('view-power') };
+  const show = (v) => {
+    Object.entries(views).forEach(([k, [id]]) => { document.getElementById(id).hidden = k !== v; btns[k].setAttribute('aria-pressed', k === v ? 'true' : 'false'); });
+    document.getElementById('standings-title').textContent = views[v][1];
+    document.getElementById('power-note').hidden = v !== 'power';
+  };
+  btns.standings.addEventListener('click', () => show('standings'));
+  btns.power.addEventListener('click', () => show('power'));
+  show('standings');
+})();
+
+/* Overview */
+(() => {
+  const st = document.querySelector('#standings-table tbody');
+  const mt = document.querySelector('#matchups-table tbody');
+  const pick = document.getElementById('week-pick');
+  const strip = document.getElementById('calendar-strip');
+  let week = null;
+  pick.addEventListener('change', () => { week = Number(pick.value); draw(); });
+  function draw() {
+    const s = ube.ready('standings');
+    if (ube.err('standings')) ube.fail(st, 5);
+    else if (s) st.replaceChildren(...s.slice().sort((a, b) => a.rank - b.rank).map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.team; if (r.team === ube.mine) tr.className = 'ube-mine';
+      if (r.rank === 6) tr.classList.add('ube-cut');
+      tr.append(ube.el('td', 'num', String(r.rank)), ube.el('td', r.team === ube.mine ? 'ube-win' : '', r.team), ube.el('td', 'num', r.record), ube.el('td', 'num', r.pct ?? '–'), ube.el('td', 'num ube-muted', r.gb ?? '–'));
+      return tr;
+    }));
+    const sc = ube.ready('schedule');
+    if (ube.err('schedule')) { ube.fail(mt, 4); return; }
+    if (!sc) return;
+    const weeks = [...new Set(sc.map((r) => r.week))].sort((a, b) => a - b);
+    const live = sc.find((r) => r.status === 'In progress');
+    const current = live ? live.week : weeks[0];
+    if (week == null) week = current;
+    if (pick.options.length !== weeks.length) pick.replaceChildren(...weeks.map((w) => new Option('Week ' + w + (w === current ? ' (now)' : ''), String(w))));
+    pick.value = String(week);
+    const games = sc.filter((r) => r.week === week);
+    const title = document.getElementById('matchups-title');
+    title.replaceChildren(document.createTextNode('Week ' + week + ' '));
+    if (games.some((r) => r.rivalry)) title.appendChild(ube.el('span', 'ube-pill rival', 'Rivalry'));
+    mt.replaceChildren(...games.map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.matchup;
+      if (r.team_a === ube.mine || r.team_b === ube.mine) tr.className = 'ube-mine';
+      const has = r.cats_a != null && r.cats_b != null;
+      tr.append(ube.el('td', has && r.cats_a > r.cats_b ? 'ube-win' : '', r.team_a), ube.el('td', 'mid ube-score', has ? String(r.cats_a) : '–'), ube.el('td', 'mid ube-score', has ? String(r.cats_b) : '–'), ube.el('td', has && r.cats_b > r.cats_a ? 'ube-win' : '', r.team_b));
+      return tr;
+    }));
+    strip.replaceChildren(...weeks.map((w) => {
+      const btn = ube.el('button', 'ube-chip' + (sc.some((r) => r.week === w && r.rivalry) ? ' rival' : ''), 'Wk ' + w);
+      btn.setAttribute('aria-pressed', w === week ? 'true' : 'false');
+      btn.addEventListener('click', () => { week = w; draw(); });
+      return btn;
+    }));
+  }
+  dash.onData(draw);
+})();
+</script>
+
+<script>
+/* Rosters */
+(() => {
+  const pick = document.getElementById('r-pick');
+  let team = ube.mine;
+  pick.addEventListener('change', () => { team = pick.value; draw(); });
+  const groups = { Guards: '#grp-guards', Wings: '#grp-wings', Bigs: '#grp-bigs' };
+  function setMark(id, src, field, val) {
+    const n = document.getElementById(id); n.dataset.where = 'team=' + ube.enc(team);
+    n.textContent = val == null ? '—' : String(val);
+  }
+  function draw() {
+    const m = ube.ready('managers'); const ro = ube.ready('rosters'); const b = ube.ready('roster_build'); const pr = ube.ready('profiles');
+    if (m) {
+      if (pick.options.length !== m.length) pick.replaceChildren(...m.map((r) => new Option(r.manager === r.team ? r.team : r.team + ' · ' + r.manager, r.team)));
+      pick.value = team;
+      const r = m.find((x) => x.team === team) || {};
+      setMark('r-team', 'managers', 'team', r.team); setMark('r-tag', 'managers', 'tagline', r.tagline); setMark('r-play', 'managers', 'playbook', r.playbook);
+    }
+    if (b) {
+      const r = b.find((x) => x.team === team) || {};
+      setMark('r-g', 'roster_build', 'guards', r.guards); setMark('r-w', 'roster_build', 'wings', r.wings); setMark('r-b', 'roster_build', 'bigs', r.bigs); setMark('r-i', 'roster_build', 'injured', r.injured);
+    }
+    if (pr) {
+      document.getElementById('r-cats').replaceChildren(...pr.filter((r) => r.team === team).map((r) => {
+        const c = ube.el('span', 'ube-cat ' + r.grade, r.cat + ' #' + r.rank); c.title = r.cat + ': ' + r.value; return c;
+      }));
+    }
+    Object.entries(groups).forEach(([role, sel]) => {
+      const tb = document.querySelector(sel + ' tbody');
+      if (ube.err('rosters')) { ube.fail(tb, 3); return; }
+      if (!ro) return;
+      const rows = ro.filter((p) => p.team === team && p.role === role);
+      tb.replaceChildren(...rows.map((p) => {
+        const tr = document.createElement('tr'); tr.dataset.key = p.player;
+        const name = ube.el('td');
+        name.appendChild(document.createTextNode(p.player + ' '));
+        name.appendChild(ube.el('div', 'ube-small ube-muted', p.nba_team + (p.il ? ' · IL' : '')));
+        const st = ube.el('td'); if (p.status) st.appendChild(ube.pill(p.status));
+        tr.append(name, ube.el('td', 'ube-small ube-muted', p.pos), st);
+        return tr;
+      }));
+    });
+  }
+  dash.onData(draw);
+})();
+</script>
+
+<script>
+/* Managers */
+(() => {
+  const grid = document.getElementById('mgr-grid');
+  const matrix = document.getElementById('matrix');
+  const short = (t) => t.replace(/'s .*$/, '').replace('Barangay Ginebra San Miguel', 'Barangay');
+  dash.onData(() => {
+    const m0 = ube.ready('managers'); const pr = ube.ready('profiles'); const pw = ube.ready('power');
+    const m = m0 ? m0.map((r) => { const p = pw ? pw.find((x) => x.team === r.team) : null; return p ? { ...r, overall_rank: p.power_rank } : r; }) : null;
+    if (ube.err('managers') || ube.err('players')) { matrix.replaceChildren(ube.el('div', 'ube-fail', 'Failed to load')); return; }
+    const teams = m ? m.slice().sort((x, y) => x.overall_rank - y.overall_rank) : null;
+    if (teams && pr) {
+      const cats = [...new Set(pr.map((r) => r.cat))];
+      const t = document.createElement('table');
+      const hr = document.createElement('tr');
+      hr.append(ube.el('th', 'num', '#'), ube.el('th', null, 'Team'), ...cats.map((c) => ube.el('th', 'mid', c)), ube.el('th', 'ube-hide-sm', 'Punt'));
+      const thead = document.createElement('thead'); thead.appendChild(hr);
+      const tb = document.createElement('tbody');
+      teams.forEach((r) => {
+        const tr = document.createElement('tr'); if (r.team === ube.mine) tr.className = 'ube-mine';
+        tr.append(ube.el('td', 'num', String(r.overall_rank)), ube.el('td', r.team === ube.mine ? 'ube-win' : '', r.team));
+        cats.forEach((c) => {
+          const p = pr.find((x) => x.team === r.team && x.cat === c) || {};
+          const td = ube.el('td', 'g ' + (p.grade || ''), p.rank != null ? String(p.rank) : '–');
+          td.title = c + ': ' + p.value; tr.appendChild(td);
+        });
+        tr.appendChild(ube.el('td', 'ube-small ube-muted ube-hide-sm', r.punt));
+        tb.appendChild(tr);
+      });
+      const lead = document.createElement('tr');
+      lead.append(ube.el('td'), ube.el('td', 'ube-small ube-muted', 'Category leader'));
+      cats.forEach((c) => { const p = pr.find((x) => x.cat === c && x.rank === 1); lead.appendChild(ube.el('td', 'g ube-small', p ? short(p.team) : '–')); });
+      lead.appendChild(ube.el('td', 'ube-hide-sm'));
+      lead.style.borderTop = '2px solid var(--color-border-line)';
+      tb.appendChild(lead);
+      t.append(thead, tb); matrix.replaceChildren(t);
+    }
+    if (teams) grid.replaceChildren(...teams.map((r) => {
+      const card = ube.el('article', 'ube-card');
+      const mark = (n, f) => { n.dataset.source = 'managers'; n.dataset.field = f; n.dataset.where = 'team=' + ube.enc(r.team); return n; };
+      const head = ube.el('div', 'ube-row');
+      const h = ube.el('h3'); const rk = ube.el('span', null, String(r.overall_rank)); rk.dataset.source = 'power'; rk.dataset.field = 'power_rank'; rk.dataset.where = 'team=' + ube.enc(r.team);
+      h.append(document.createTextNode('#'), rk, document.createTextNode(' '), mark(ube.el('span', null, r.team), 'team'));
+      head.append(h, mark(ube.el('span', 'ube-small ube-muted', r.manager), 'manager'));
+      const tag = mark(ube.el('p', 'ube-tagline', r.tagline), 'tagline');
+      const pills = ube.el('div', 'ube-controls');
+      const punt = ube.el('span', 'ube-pill bad'); punt.append(document.createTextNode('Punt: '), mark(ube.el('span', null, r.punt), 'punt'));
+      pills.append(mark(ube.el('span', 'ube-pill ok', r.playbook), 'playbook'), punt);
+      const sum = mark(ube.el('p', 'ube-small', r.summary), 'summary'); sum.style.margin = '0';
+      card.append(head, tag, pills, sum);
+      return card;
+    }));
+  });
+})();
+</script>
+
+<script>
+/* Trade market: editable, saved to the hub's shared store */
+(() => {
+  const tb = document.querySelector('#market-table tbody');
+  const status = document.getElementById('mk-status');
+  const FIELDS = ['trade_block', 'untouchables', 'targets'];
+  const slug = (t) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  let entries = {}; let db = null; let editing = null; let draft = {}; let teams = [];
+  function render() {
+    tb.replaceChildren(...teams.map((team) => {
+      const id = slug(team); const e = entries[id] || {};
+      const tr = document.createElement('tr'); if (team === ube.mine) tr.className = 'ube-mine';
+      tr.appendChild(ube.el('td', team === ube.mine ? 'ube-win' : '', team));
+      FIELDS.forEach((f) => {
+        const td = ube.el('td');
+        if (editing === id) {
+          const ta = document.createElement('textarea'); ta.id = 'mk-' + id + '-' + f;
+          ta.setAttribute('aria-label', f.replace('_', ' ') + ' for ' + team);
+          ta.value = draft[f] ?? ''; ta.addEventListener('input', () => { draft[f] = ta.value; });
+          td.appendChild(ta);
+        } else { const v = (e[f] || '').trim(); td.textContent = v; if (!v) td.className = 'empty'; }
+        tr.appendChild(td);
+      });
+      const act = ube.el('td'); const box = ube.el('div', 'ube-btns');
+      if (editing === id) {
+        const save = ube.el('button', 'ube-btn primary', 'Save'); const cancel = ube.el('button', 'ube-btn', 'Cancel');
+        save.addEventListener('click', async () => {
+          save.disabled = true; save.textContent = 'Saving…';
+          const body = { team }; FIELDS.forEach((f) => { body[f] = String(draft[f] ?? '').slice(0, 2000); });
+          body.updatedAt = new Date().toISOString();
+          try { await db.doc('market/' + id).set(body); editing = null; status.textContent = 'Saved'; render(); }
+          catch (err) { save.disabled = false; save.textContent = 'Save'; status.textContent = 'Couldn’t save. You may not have edit access.'; }
+        });
+        cancel.addEventListener('click', () => { editing = null; render(); });
+        box.append(save, cancel);
+      } else if (db) {
+        const edit = ube.el('button', 'ube-btn', 'Edit');
+        edit.setAttribute('aria-label', 'Edit ' + team);
+        edit.addEventListener('click', () => { editing = id; draft = {}; FIELDS.forEach((f) => { draft[f] = e[f] || ''; }); status.textContent = ''; render(); const first = document.getElementById('mk-' + id + '-trade_block'); if (first) first.focus(); });
+        box.appendChild(edit);
+      }
+      act.appendChild(box); tr.appendChild(act);
+      return tr;
+    }));
+  }
+  dash.onData(() => {
+    const m = ube.ready('managers');
+    if (m) { const next = m.map((r) => r.team).sort((a, b) => (b === ube.mine) - (a === ube.mine)); if (next.join('|') !== teams.join('|')) { teams = next; render(); } }
+  });
+  (async () => {
+    const use = window.claude && window.claude.use;
+    db = use ? await window.claude.use('db').catch(() => null) : null;
+    if (!db) { status.textContent = 'Read-only in this view'; render(); return; }
+    render();
+    db.collection('market').onSnapshot((snap) => {
+      const next = {}; snap.docs.forEach((d) => { if (d.exists) next[d.id] = d.data(); });
+      entries = next; render();
+    }, () => { status.textContent = 'Couldn’t load saved entries'; });
+  })();
+})();
+
+/* Trades, news */
+(() => {
+  const tt = document.querySelector('#trades-table tbody');
+  const it = document.querySelector('#injury-table tbody');
+  const nt = document.querySelector('#news-table tbody');
+  const lt = document.querySelector('#log-table tbody');
+  const sel = document.getElementById('inj-team');
+  let team = '';
+  sel.addEventListener('change', () => { team = sel.value; draw(); });
+  function draw() {
+    const t = ube.ready('trades');
+    if (ube.err('trades') || (t && !t.length)) { const tr = document.createElement('tr'); const td = ube.el('td', 'ube-muted ube-small', 'No pending trades right now.'); td.colSpan = 5; tr.appendChild(td); tt.replaceChildren(tr); }
+    else if (t) tt.replaceChildren(...t.map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.deal;
+      if (r.team_a === ube.mine || r.team_b === ube.mine) tr.className = 'ube-mine';
+      tr.append(ube.el('td', 'ube-win', r.team_a), ube.el('td', null, r.a_gets), ube.el('td', 'ube-win', r.team_b), ube.el('td', null, r.b_gets), ube.el('td', 'ube-small ube-muted', r.processes));
+      return tr;
+    }));
+    const inj = ube.ready('injuries');
+    if (ube.err('injuries')) ube.fail(it, 5);
+    else if (inj) {
+      const teams = [...new Set(inj.map((r) => r.ube_team))];
+      if (sel.options.length !== teams.length + 1) sel.replaceChildren(new Option('All teams', ''), ...teams.map((x) => new Option(x, x)));
+      sel.value = team;
+      const rank = (s) => (/^out/i.test(s) ? 0 : 1);
+      it.replaceChildren(...inj.filter((r) => !team || r.ube_team === team).sort((a, b) => rank(a.status) - rank(b.status)).map((r) => {
+        const tr = document.createElement('tr'); tr.dataset.key = r.player;
+        const name = ube.el('td', null, r.player); name.appendChild(ube.el('div', 'ube-small ube-muted', r.nba_team));
+        const st = ube.el('td'); st.appendChild(ube.pill(r.status));
+        tr.append(name, st, ube.el('td', 'ube-small', r.est_return), ube.el('td', 'ube-small ube-hide-sm', r.ube_team), ube.el('td', 'ube-small ube-hide-sm', r.detail));
+        return tr;
+      }));
+    }
+    const n = ube.ready('news');
+    if (ube.err('news')) ube.fail(nt, 3);
+    else if (n) nt.replaceChildren(...n.slice().reverse().map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.headline;
+      const h = ube.el('td'); const a = ube.el('a', null, r.headline); a.href = r.url; a.target = '_blank'; a.rel = 'noopener'; h.appendChild(a);
+      tr.append(ube.el('td', 'ube-small ube-muted', r.date), h, ube.el('td', 'ube-small', r.angle));
+      return tr;
+    }));
+    const l = ube.ready('log');
+    if (ube.err('log')) ube.fail(lt, 3);
+    else if (l) lt.replaceChildren(...l.slice().reverse().map((r) => {
+      const tr = document.createElement('tr'); tr.dataset.key = r.version;
+      tr.append(ube.el('td', null, r.version), ube.el('td', 'ube-small ube-muted', r.date), ube.el('td', 'ube-small', r.change));
+      return tr;
+    }));
+  }
+  dash.onData(draw);
+})();
+</script>
+
+<script>
+/* Matchup model: shared math for the preview and the trade analyzer */
+window.ubeModel = (() => {
+  const CATS = ['FG%', 'FT%', '3PTM', 'PTS', 'REB', 'AST', 'ST', 'BLK', 'TO'];
+  const KEY = { '3PTM': 'tpm', PTS: 'pts', REB: 'reb', AST: 'ast', ST: 'stl', BLK: 'blk', TO: 'tov' };
+  const top10 = (ps) => UBE_RANK.counted(ps);
+  // games: function(nba_team) -> games that week, or null for per-game
+  function agg(ps, games) {
+    const t = top10(ps); const g = (p) => (games ? games(p.nba_team) : 1) * p.avail;
+    const s = (k) => d3.sum(t, (p) => p[k] * g(p));
+    const out = { 'FG%': s('fgm') / s('fga'), 'FT%': s('ftm') / s('fta'), gp: d3.sum(t, (p) => (games ? games(p.nba_team) : 0) * p.avail), top: t };
+    Object.entries(KEY).forEach(([c, k]) => { out[c] = s(k); });
+    return out;
+  }
+  // Weekly projection: each game day, start the best 10 available players who have a game (bench covers absences).
+  function weekly(ps, dayRows) {
+    const byDay = d3.group ? d3.group(dayRows, (r) => r.date) : dayRows.reduce((m, r) => m.set(r.date, [...(m.get(r.date) || []), r]), new Map());
+    const pool = ps.filter((p) => !(p.il && !p.out_until)).sort((a, b) => b.value - a.value);
+    const tot = { fgm: 0, fga: 0, ftm: 0, fta: 0, tpm: 0, pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, tov: 0 }; let gp = 0;
+    byDay.forEach((rows, date) => {
+      const teams = new Set(rows.map((r) => r.nba_team));
+      pool.filter((p) => teams.has(p.nba_team) && (!p.out_until || date >= p.out_until)).slice(0, 10).forEach((p) => { gp += 1; Object.keys(tot).forEach((k) => { tot[k] += p[k]; }); });
+    });
+    const out = { 'FG%': tot.fgm / tot.fga, 'FT%': tot.ftm / tot.fta, gp };
+    Object.entries(KEY).forEach(([c, k]) => { out[c] = tot[k]; });
+    return out;
+  }
+  function ranks(aggs) {
+    const r = {}; const teams = Object.keys(aggs);
+    teams.forEach((t) => { r[t] = {}; CATS.forEach((c) => { r[t][c] = 1 + teams.filter((u) => (c === 'TO' ? aggs[u][c] < aggs[t][c] : aggs[u][c] > aggs[t][c])).length; }); });
+    return r;
+  }
+  function powerAgg(aggs) {
+    const cw = UBE_RANK.catsWeek(aggs); const out = {};
+    Object.keys(cw).sort((a, b) => cw[b] - cw[a]).forEach((t, i) => { out[t] = i + 1; });
+    return { rank: out, cw };
+  }
+  function power(r) {
+    const teams = Object.keys(r);
+    const rows = teams.map((t) => {
+      let w = 0;
+      teams.forEach((u) => { if (u === t) return; const a = CATS.filter((c) => r[t][c] < r[u][c]).length; const b = CATS.filter((c) => r[t][c] > r[u][c]).length; if (a > b) w += 1; });
+      return { team: t, wins: w, avg: d3.mean(CATS, (c) => r[t][c]) };
+    }).sort((x, y) => y.wins - x.wins || x.avg - y.avg);
+    const out = {}; rows.forEach((x, i) => { out[x.team] = i + 1; });
+    return out;
+  }
+  // edge: positive favors A
+  function edge(c, a, b) {
+    if (c === 'FG%') return (a - b) / 0.012;
+    if (c === 'FT%') return (a - b) / 0.025;
+    const rel = (a - b) / (((a + b) / 2) || 1);
+    return (c === 'TO' ? -rel : rel) / 0.10;
+  }
+  const call = (e) => (Math.abs(e) < 0.3 ? 'Toss-up' : e > 0 ? 'A' : 'B');
+  const fmt = (c, v) => (c.includes('%') ? d3.format('.3f')(v).replace(/^0/, '') : d3.format('.1f')(v));
+  return { CATS, agg, weekly, ranks, power, powerAgg, edge, call, fmt };
+})();
+
+/* Matchup preview */
+(() => {
+  const M = window.ubeModel;
+  const $ = (id) => document.getElementById(id);
+  const wk = $('mu-week'); const sa = $('mu-a'); const sb = $('mu-b');
+  let week = null; let A = ube.mine; let B = null; let manualB = false;
+  wk.addEventListener('change', () => { week = Number(wk.value); manualB = false; draw(); });
+  sa.addEventListener('change', () => { A = sa.value; manualB = false; draw(); });
+  sb.addEventListener('change', () => { B = sb.value; manualB = true; draw(); });
+  const short = (t) => t.replace(/'s .*$/, '').replace('Barangay Ginebra San Miguel', 'Barangay');
+  const TIPS = {
+    'FG%': 'Start efficient bigs; sit low-percentage volume shooters on light days.',
+    'FT%': 'Sit poor free-throw shooters when you are ahead in counting stats.',
+    '3PTM': 'Start an extra shooter or stream a 3-and-D wing.',
+    PTS: 'Max out games played; stream a volume scorer.',
+    REB: 'Stream a rebounding big for the extra games.',
+    AST: 'Stream a playmaking guard.',
+    ST: 'Stream a steals guard or wing.',
+    BLK: 'Stream a shot-blocking big.',
+    TO: 'Bench high-turnover guards on light days.',
+  };
+  function draw() {
+    const P = ube.ready('players'); const S = ube.ready('schedule'); const G = ube.ready('nba_games'); const Mg = ube.ready('managers');
+    if (ube.err('players')) { $('mu-edges').replaceChildren(ube.el('div', 'ube-fail', 'Failed to load')); return; }
+    if (!P || !S) return;
+    const teams = [...new Set(P.map((p) => p.team))];
+    const weeks = [...new Set(S.map((r) => r.week))].sort((a, b) => a - b);
+    const live = S.find((r) => r.status === 'In progress');
+    if (week == null) week = live ? live.week : weeks[0];
+    if (wk.options.length !== weeks.length) wk.replaceChildren(...weeks.map((w) => new Option('Week ' + w + (live && w === live.week ? ' (now)' : ''), String(w))));
+    wk.value = String(week);
+    if (sa.options.length !== teams.length) sa.replaceChildren(...teams.map((t) => new Option(t, t)));
+    sa.value = A;
+    const game = S.find((r) => r.week === week && (r.team_a === A || r.team_b === A));
+    if (!manualB || !B || B === A) B = game ? (game.team_a === A ? game.team_b : game.team_a) : teams.find((t) => t !== A);
+    sb.replaceChildren(...teams.filter((t) => t !== A).map((t) => new Option(t, t)));
+    sb.value = B;
+    const scheduled = game && (game.team_a === B || game.team_b === B);
+    const title = $('mu-title'); title.replaceChildren(document.createTextNode('Week ' + week + ' matchup '));
+    if (scheduled && game.rivalry) title.appendChild(ube.el('span', 'ube-pill rival', 'Rivalry'));
+
+    const gm = G ? G.filter((r) => r.week === week) : [];
+    const games = gm.length > 0;
+    const pick = (t) => P.filter((p) => p.team === t);
+    const ga = games ? M.weekly(pick(A), gm) : M.agg(pick(A), null); const gb = games ? M.weekly(pick(B), gm) : M.agg(pick(B), null);
+    let wa = 0, wb = 0, tu = 0;
+    const rows = M.CATS.map((c) => { const e = M.edge(c, ga[c], gb[c]); const k = M.call(e); if (k === 'A') wa += 1; else if (k === 'B') wb += 1; else tu += 1; return { c, e, k }; });
+
+    $('mu-an').textContent = short(A); $('mu-bn').textContent = short(B);
+    const final = scheduled && game.status === 'Final' && game.cats_a != null;
+    if (final) {
+      const aIsA = game.team_a === A;
+      $('mu-as').textContent = String(aIsA ? game.cats_a : game.cats_b); $('mu-bs').textContent = String(aIsA ? game.cats_b : game.cats_a);
+      $('mu-mid').textContent = 'final';
+    } else { $('mu-as').textContent = String(wa); $('mu-bs').textContent = String(wb); $('mu-mid').textContent = tu ? 'projected · ' + tu + ' toss-up' + (tu > 1 ? 's' : '') : 'projected'; }
+    $('mu-note').textContent = (games ? 'Projected starts this week (injured players sit until they return): ' + short(A) + ' ' + Math.round(ga.gp) + ' · ' + short(B) + ' ' + Math.round(gb.gp) + '. ' : 'Schedule not loaded for this week, so this compares per-game averages. ')
+      + 'Max 5 adds per week. ' + (scheduled ? '' : 'Not this week’s scheduled opponent.');
+
+    const box = $('mu-edges');
+    const head = ube.el('div', 'mu-row mu-head-row');
+    head.append(ube.el('span', null, ''), ube.el('span', 'v', short(A)), ube.el('span'), ube.el('span', 'v', short(B)), ube.el('span', 'pillcol', ''));
+    box.replaceChildren(head, ...rows.map(({ c, e, k }) => {
+      const r = ube.el('div', 'mu-row');
+      const track = ube.el('div', 'mu-track'); const bar = ube.el('div', 'mu-bar ' + (k === 'Toss-up' ? 't ' + (e >= 0 ? 'a' : 'b') : k === 'A' ? 'a' : 'b'));
+      bar.style.width = Math.max(2, Math.min(1, Math.abs(e) / 2) * 50) + '%';
+      if (k === 'Toss-up') { bar.style.background = 'var(--cds-chart-muted)'; }
+      track.appendChild(bar);
+      const pill = ube.el('span', 'ube-pill ' + (k === 'A' ? 'ok' : k === 'B' ? 'bad' : 'warn'), k === 'A' ? 'Likely win' : k === 'B' ? 'Likely loss' : 'Toss-up');
+      const pc = ube.el('span', 'pillcol'); pc.appendChild(pill);
+      r.append(ube.el('span', 'mu-cat', c), ube.el('span', 'v' + (k === 'A' ? ' lead' : ''), M.fmt(c, ga[c])), track, ube.el('span', 'v' + (k === 'B' ? ' lead' : ''), M.fmt(c, gb[c])), pc);
+      r.title = c + ': ' + (k === 'A' ? 'edge ' + short(A) : k === 'B' ? 'edge ' + short(B) : 'too close to call');
+      return r;
+    }));
+    const swing = rows.filter((x) => x.k === 'Toss-up');
+    $('mu-tips').replaceChildren(...swing.map((x) => { const d = ube.el('div'); d.append(ube.el('b', null, x.c + ' (toss-up): '), document.createTextNode(TIPS[x.c])); return d; }));
+
+    // Scouting report on B
+    const mg = Mg ? Mg.find((m) => m.team === B) : null;
+    $('sc-title').textContent = 'Scouting report: ' + B;
+    $('sc-play').textContent = mg ? mg.playbook : '—';
+    $('sc-tag').textContent = mg ? mg.tagline : '—';
+    const bp = P.filter((p) => p.team === B);
+    const top = bp.filter((p) => p.avail > 0).sort((x, y) => y.value - x.value).slice(0, 3);
+    $('sc-top').replaceChildren(...top.map((p) => { const d = ube.el('div', 'sc-item', p.player); d.appendChild(ube.el('div', 'ube-small ube-muted', d3.format('.1f')(p.pts) + ' pts · ' + d3.format('.1f')(p.reb) + ' reb · ' + d3.format('.1f')(p.ast) + ' ast · ' + d3.format('.1f')(p.stl + p.blk) + ' stocks')); return d; }));
+    const inj = bp.filter((p) => p.status !== 'Healthy');
+    $('sc-inj').replaceChildren(...(inj.length ? inj.map((p) => { const d = ube.el('div', 'sc-item', p.player + ' '); d.appendChild(ube.pill(p.status)); if (p.il) d.appendChild(ube.el('span', 'ube-small ube-muted', ' IL')); return d; }) : [ube.el('div', 'sc-item ube-muted', 'None')]));
+    const wins = rows.filter((x) => x.k === 'A').map((x) => x.c); const loss = rows.filter((x) => x.k === 'B').map((x) => x.c);
+    const beat = [];
+    if (mg && mg.punt) beat.push(['They punt', mg.punt]);
+    if (wins.length) beat.push(['Lock in', wins.join(', ')]);
+    if (swing.length) beat.push(['Chase', swing.map((x) => x.c).join(', ')]);
+    if (loss.length) beat.push(['Likely concede', loss.join(', ')]);
+    $('sc-beat').replaceChildren(...beat.map(([k, v]) => { const d = ube.el('div', 'sc-item'); d.append(ube.el('b', null, k + ': '), document.createTextNode(v)); return d; }));
+  }
+  dash.onData(draw);
+})();
+
+/* Trade analyzer */
+(() => {
+  const M = window.ubeModel;
+  const $ = (id) => document.getElementById(id);
+  const sa = $('ta-a'); const sb = $('ta-b');
+  let A = ube.mine; let B = null; const out = { a: new Set(), b: new Set() };
+  sa.addEventListener('change', () => { A = sa.value; if (B === A) B = null; out.a.clear(); out.b.clear(); draw(); });
+  sb.addEventListener('change', () => { B = sb.value; out.b.clear(); draw(); });
+  $('ta-clear').addEventListener('click', () => { out.a.clear(); out.b.clear(); draw(); });
+  $('ta-pending').addEventListener('click', () => {
+    const T = ube.ready('trades'); if (!T || !T.length) return;
+    const t = T.find((x) => x.team_a === A || x.team_b === A) || T[0];
+    A = t.team_a; B = t.team_b; out.a = new Set(t.b_gets.split(',').map((s) => s.trim())); out.b = new Set(t.a_gets.split(',').map((s) => s.trim())); draw();
+  });
+  const short = (t) => t.replace(/'s .*$/, '').replace('Barangay Ginebra San Miguel', 'Barangay');
+  function list(box, ps, set) {
+    box.replaceChildren(...ps.slice().sort((x, y) => y.value - x.value).map((p) => {
+      const l = document.createElement('label'); const c = document.createElement('input'); c.type = 'checkbox'; c.id = 'ta-' + p.player.replace(/[^a-z0-9]/gi, ''); c.checked = set.has(p.player);
+      c.addEventListener('change', () => { if (c.checked) set.add(p.player); else set.delete(p.player); draw(); });
+      const s = ube.el('span', null, p.player); l.append(c, s, ube.el('span', 'ube-small ube-muted', p.pos + (p.status !== 'Healthy' ? ' · ' + p.status : '') + (p.il ? ' · IL' : '')));
+      return l;
+    }));
+  }
+  function draw() {
+    const P = ube.ready('players');
+    if (ube.err('players')) { $('ta-result').replaceChildren(ube.el('div', 'ube-fail', 'Failed to load')); return; }
+    if (!P) return;
+    const teams = [...new Set(P.map((p) => p.team))];
+    if (!B || B === A) B = teams.find((t) => t !== A);
+    if (sa.options.length !== teams.length) sa.replaceChildren(...teams.map((t) => new Option(t, t)));
+    sa.value = A; sb.replaceChildren(...teams.filter((t) => t !== A).map((t) => new Option(t, t))); sb.value = B;
+    $('ta-a-h').textContent = short(A) + ' sends'; $('ta-b-h').textContent = short(B) + ' sends';
+    list($('ta-a-list'), P.filter((p) => p.team === A), out.a); list($('ta-b-list'), P.filter((p) => p.team === B), out.b);
+    const res = $('ta-result');
+    if (!out.a.size && !out.b.size) { res.replaceChildren(ube.el('p', 'ube-small ube-muted', 'Tick the players each team sends to see the impact.')); return; }
+    const after = P.map((p) => (p.team === A && out.a.has(p.player) ? { ...p, team: B } : p.team === B && out.b.has(p.player) ? { ...p, team: A } : p));
+    const build = (ps) => { const g = {}; teams.forEach((t) => { g[t] = M.agg(ps.filter((p) => p.team === t), null); }); return g; };
+    const ag0 = build(P); const ag1 = build(after); const r0 = M.ranks(ag0); const r1 = M.ranks(ag1); const q0 = M.powerAgg(ag0); const q1 = M.powerAgg(ag1); const p0 = q0.rank; const p1 = q1.rank;
+    const tbl = document.createElement('table'); const hr = document.createElement('tr');
+    hr.append(ube.el('th', null, 'Team'), ...M.CATS.map((c) => ube.el('th', 'mid', c)), ube.el('th', 'mid', 'Power'));
+    const th = document.createElement('thead'); th.appendChild(hr); const tb = document.createElement('tbody');
+    const cell = (b, a) => { const td = ube.el('td', 'mid'); if (a === b) { td.textContent = String(a); td.className += ' ube-muted'; } else { td.append(ube.el('span', 'ube-muted ube-small', b + '→'), ube.el('span', a < b ? 'ta-up' : 'ta-down', String(a))); } return td; };
+    [A, B].forEach((t) => { const tr = document.createElement('tr'); if (t === ube.mine) tr.className = 'ube-mine'; tr.append(ube.el('td', 'ube-win', short(t)), ...M.CATS.map((c) => cell(r0[t][c], r1[t][c])), cell(p0[t], p1[t])); tb.appendChild(tr); });
+    tbl.append(th, tb); const wrap = ube.el('div', 'ube-scroll'); wrap.appendChild(tbl);
+    const ups = M.CATS.filter((c) => r1[A][c] < r0[A][c]); const downs = M.CATS.filter((c) => r1[A][c] > r0[A][c]);
+    const cnt = (ps, t) => ps.filter((p) => p.team === t);
+    const roles = (ps) => ['Guards', 'Wings', 'Bigs'].map((r) => ps.filter((p) => p.role === r).length);
+    const facts = ube.el('div', 'ube-grid3');
+    [A, B].forEach((t) => {
+      const before = cnt(P, t); const aft = cnt(after, t); const [g, w, b] = roles(aft);
+      const d = ube.el('div', 'sc-item');
+      d.append(ube.el('b', null, short(t) + ': '), document.createTextNode(before.length + ' → ' + aft.length + ' players' + (aft.length > 16 ? ' (must drop ' + (aft.length - 16) + ')' : aft.length < 16 ? ' (' + (16 - aft.length) + ' open spot' + (16 - aft.length > 1 ? 's' : '') + ')' : '') + ' · ' + g + ' G / ' + w + ' W / ' + b + ' B'));
+      facts.appendChild(d);
+    });
+    const moved = P.filter((p) => (p.team === A && out.a.has(p.player)) || (p.team === B && out.b.has(p.player)));
+    const hurt = moved.filter((p) => p.status !== 'Healthy');
+    const valIn = d3.sum(moved.filter((p) => p.team === B), (p) => p.value); const valOut = d3.sum(moved.filter((p) => p.team === A), (p) => p.value);
+    const h = ube.el('div', 'sc-item'); h.append(ube.el('b', null, 'Health: '), document.createTextNode(hurt.length ? hurt.map((p) => p.player + ' (' + p.status + ')').join(', ') : 'All players healthy'));
+    const v = ube.el('div', 'sc-item'); v.append(ube.el('b', null, 'Player value: '), document.createTextNode(short(A) + ' sends ' + d3.format('+.1f')(valOut) + ', receives ' + d3.format('+.1f')(valIn)));
+    facts.append(h, v);
+    const dp = p0[A] - p1[A] || Math.sign(Math.round((q1.cw[A] - q0.cw[A]) * 100));
+    const good = dp > 0 || (dp === 0 && ups.length > downs.length);
+    const bad = dp < 0 || (dp === 0 && downs.length > ups.length);
+    const verdict = ube.el('p', 'ta-verdict');
+    verdict.textContent = (good ? 'Good for ' : bad ? 'Costly for ' : 'Neutral for ') + short(A) + ': power ' + p0[A] + ' → ' + p1[A] + ' (' + d3.format('.1f')(q0.cw[A]) + ' → ' + d3.format('.1f')(q1.cw[A]) + ' cats/wk)' 
+      + (ups.length ? '; improves ' + ups.join(', ') : '') + (downs.length ? '; costs ' + downs.join(', ') : '') + '.';
+    res.replaceChildren(verdict, wrap, facts, ube.el('p', 'ube-small ube-muted', 'Counts up to 13 players per team, IL excluded (Hashtagbasketball per-game stats). Power = categories won per week vs. the other 9 teams.'));
+  }
+  dash.onData(draw);
+})();
+</script>
+
+<script>
+/* Rosters: category radar (full-strength category ranks) */
+(() => {
+  const box = document.getElementById('radar');
+  const pick = document.getElementById('r-pick');
+  pick.addEventListener('change', () => draw());
+  function draw() {
+    const pr = ube.ready('profiles');
+    if (ube.err('profiles')) { box.replaceChildren(ube.el('div', 'ube-fail', 'Failed to load')); return; }
+    if (!pr) return;
+    const team = pick.value || ube.mine;
+    const rows = pr.filter((r) => r.team === team);
+    const n = rows.length; if (!n) return;
+    const W = Math.min(box.clientWidth || 360, 420); const H = W; const pad = 62; const R = W / 2 - pad;
+    const cx = W / 2; const cy = H / 2;
+    const ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
+    const rad = (rank) => (R * (11 - rank)) / 10;
+    const pt = (i, r) => [cx + r * Math.cos(ang(i)), cy + r * Math.sin(ang(i))];
+    const svg = d3.create('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
+      .attr('aria-label', team + ' category ranks');
+    [0.25, 0.5, 0.75, 1].forEach((f) => svg.append('polygon').attr('class', 'grid').attr('points', rows.map((_, i) => pt(i, R * f).join(',')).join(' ')));
+    svg.append('polygon').attr('class', 'mid').attr('points', rows.map((_, i) => pt(i, rad(5.5)).join(',')).join(' '));
+    rows.forEach((_, i) => { const [x, y] = pt(i, R); svg.append('line').attr('class', 'spoke').attr('x1', cx).attr('y1', cy).attr('x2', x).attr('y2', y); });
+    const color = dash.colors[0];
+    svg.append('polygon').attr('class', 'shape').attr('points', rows.map((r, i) => pt(i, rad(r.rank)).join(',')).join(' '))
+      .style('fill', color).style('stroke', color);
+    rows.forEach((r, i) => {
+      const [x, y] = pt(i, rad(r.rank));
+      svg.append('circle').attr('cx', x).attr('cy', y).attr('r', 3.5).style('fill', color);
+      const [lx, ly] = pt(i, R + 20); const a = Math.cos(ang(i));
+      const anchor = Math.abs(a) < 0.3 ? 'middle' : a > 0 ? 'start' : 'end';
+      const g = svg.append('text').attr('x', lx).attr('y', ly).attr('text-anchor', anchor).attr('dominant-baseline', 'middle');
+      g.append('tspan').attr('class', 'lbl').text(r.cat);
+      g.append('tspan').attr('class', 'rk').attr('dx', 4).text('#' + r.rank);
+    });
+    box.replaceChildren(svg.node());
+  }
+  dash.onData(draw);
+})();
+</script>
+
+<script>
+/* Weekly slate */
+(() => {
+  const M = window.ubeModel;
+  const $ = (id) => document.getElementById(id);
+  const wkSel = $('sl-week'); const tmSel = $('sl-team');
+  let week = null; let team = ube.mine;
+  wkSel.addEventListener('change', () => { week = Number(wkSel.value); draw(); });
+  tmSel.addEventListener('change', () => { team = tmSel.value; draw(); });
+  const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const iso = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const weekDates = (w) => { const s = new Date(2026, 9, 26 + (w - 2) * 7); return DAYS.map((_, i) => iso(new Date(s.getFullYear(), s.getMonth(), s.getDate() + i))); };
+  const short = (t) => t.replace(/[’']s .*$/, '').replace('Barangay Ginebra San Miguel', 'Barangay');
+  const plays = (p, date) => !(p.il && !p.out_until) && (!p.out_until || date >= p.out_until);
+  // Daily starts: best 10 available players with a game that day.
+  function starts(ps, gm, from) {
+    const byDay = new Map(); gm.forEach((r) => { if (!byDay.has(r.date)) byDay.set(r.date, new Set()); byDay.get(r.date).add(r.nba_team); });
+    const pool = ps.slice().sort((a, b) => b.value - a.value);
+    let all = 0, left = 0, games = 0;
+    byDay.forEach((teams, date) => {
+      const avail = pool.filter((p) => teams.has(p.nba_team) && plays(p, date));
+      const n = Math.min(10, avail.length); all += n; if (date >= from) left += n;
+      games += ps.filter((p) => !p.il && teams.has(p.nba_team)).length;
+    });
+    return { all, left, games };
+  }
+  function draw() {
+    const P = ube.ready('players'); const G = ube.ready('nba_games'); const S = ube.ready('schedule'); const RO = ube.ready('rosters');
+    if (ube.err('players') || ube.err('nba_games')) { $('sl-grid').replaceChildren(ube.el('caption', 'ube-fail', 'Failed to load')); return; }
+    if (!P || !G || !S) return;
+    const today = iso(new Date());
+    const weeks = [...new Set(G.map((r) => r.week))].sort((a, b) => a - b);
+    const live = S.find((r) => r.status === 'In progress');
+    if (week == null) week = live && weeks.includes(live.week) ? live.week : weeks[weeks.length - 1];
+    if (wkSel.options.length !== weeks.length) wkSel.replaceChildren(...weeks.map((w) => new Option('Week ' + w + (live && w === live.week ? ' (now)' : ''), String(w))));
+    wkSel.value = String(week);
+    const teams = [...new Set(P.map((p) => p.team))];
+    if (tmSel.options.length !== teams.length) tmSel.replaceChildren(...teams.map((t) => new Option(t, t)));
+    tmSel.value = team;
+    const dates = weekDates(week);
+    const gm = G.filter((r) => r.week === week);
+    const game = S.find((r) => r.week === week && (r.team_a === team || r.team_b === team));
+    const opp = game ? (game.team_a === team ? game.team_b : game.team_a) : null;
+    const pick = (t) => P.filter((p) => p.team === t);
+    $('sl-title').textContent = 'Weekly slate · Week ' + week + ' · ' + new Date(dates[0] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + '–' + new Date(dates[6] + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    // Your week
+    const sa = starts(pick(team), gm, today); const sb = opp ? starts(pick(opp), gm, today) : null;
+    $('sl-eyebrow').textContent = (team === ube.mine ? 'Your week' : short(team) + '’s week') + (opp ? ' vs ' + short(opp) : '');
+    $('sl-me-short').textContent = short(team);
+    $('sl-gl-a').textContent = String(sa.left); $('sl-gl-b').textContent = sb ? String(sb.left) : '—';
+    $('sl-opp-short').textContent = opp ? short(opp) : 'Opp';
+    const bars = $('sl-bars');
+    if (opp) {
+      const a = M.weekly(pick(team), gm); const b = M.weekly(pick(opp), gm);
+      let wa = 0, wb = 0;
+      const rows = M.CATS.map((c) => { const k = M.call(M.edge(c, a[c], b[c])); if (k === 'A') wa += 1; if (k === 'B') wb += 1; return { c, k }; });
+      const tu = 9 - wa - wb;
+      const proj = $('sl-proj'); proj.textContent = (wa > wb ? 'Projected win ' : wa < wb ? 'Projected loss ' : 'Projected tie ') + wa + '-' + wb + (tu ? '-' + tu : '');
+      proj.className = 'ube-pill ' + (wa > wb ? 'ok' : wa < wb ? 'bad' : 'warn');
+      bars.replaceChildren(...rows.map(({ c, k }) => {
+        const r = ube.el('div', 'sl-bar-row');
+        const pct = c.includes('%'); const hi = pct ? 1 : Math.max(a[c], b[c]) || 1;
+        const tr = ube.el('div', 'sl-tracks');
+        const ta = ube.el('div', 'sl-track'); const fa = ube.el('i', k === 'A' ? 'lead-a' : ''); fa.style.width = (100 * a[c] / hi) + '%'; ta.appendChild(fa);
+        const tb = ube.el('div', 'sl-track'); const fb = ube.el('i', k === 'B' ? 'lead-b' : ''); fb.style.width = (100 * b[c] / hi) + '%'; tb.appendChild(fb);
+        tr.append(ta, tb);
+        const lab = ube.el('span', 'sl-cat', c);
+        const v = ube.el('span', 'sl-v'); v.append(ube.el('b', null, M.fmt(c, a[c]).replace(/\.0$/, '')), document.createTextNode(' v ' + M.fmt(c, b[c]).replace(/\.0$/, '')), ube.el('span', 'dot ' + (k === 'A' ? 'a' : k === 'B' ? 'b' : '')));
+        r.append(lab, tr, v); r.title = c + ': ' + (k === 'A' ? 'edge ' + short(team) : k === 'B' ? 'edge ' + short(opp) : 'toss-up');
+        return r;
+      }));
+      $('sl-note').textContent = 'Projected full week: each day the best 10 players with a game start; injured players sit until they return. Stats: Hashtagbasketball per-game averages. Top bar = ' + short(team) + ', bottom = ' + short(opp) + '. Green = ' + short(team) + ' leads, red = ' + short(opp) + ' leads, grey/amber dot = toss-up.';
+    } else { bars.replaceChildren(ube.el('p', 'ube-small ube-muted', 'No matchup scheduled this week.')); $('sl-proj').textContent = '—'; $('sl-note').textContent = ''; }
+
+    // Games per NBA team
+    const cnt = {}; gm.forEach((r) => { cnt[r.nba_team] = (cnt[r.nba_team] || 0) + 1; });
+    const mineNba = new Set(pick(team).map((p) => p.nba_team));
+    const groups = d3.groups(Object.entries(cnt), ([, n]) => n).sort((x, y) => y[0] - x[0]);
+    $('sl-nba').replaceChildren(...groups.map(([n, ts], i) => {
+      const row = ube.el('div', 'sl-nba-row');
+      row.appendChild(ube.el('span', 'sl-n ' + (i === 0 ? 'most' : i === groups.length - 1 ? 'fewest' : ''), String(n)));
+      const box = ube.el('div', 'sl-chips');
+      ts.map(([t]) => t).sort().forEach((t) => { const c = ube.el('span', 'sl-chip' + (mineNba.has(t) ? ' on' : ''), t); c.title = t + ': ' + n + ' games' + (mineNba.has(t) ? ' · on ' + short(team) : ''); box.appendChild(c); });
+      row.appendChild(box); return row;
+    }));
+
+    // Roster guide
+    const order = RO ? RO.filter((r) => r.team === team).map((r) => r.player) : [];
+    const ps = pick(team).slice().sort((a, b) => ((order.indexOf(a.player) + 1) || 99) - ((order.indexOf(b.player) + 1) || 99));
+    const games = {}; gm.forEach((r) => { (games[r.nba_team] = games[r.nba_team] || {})[r.date] = r; });
+    const grid = $('sl-grid');
+    const thead = document.createElement('thead'); const hr = document.createElement('tr');
+    hr.append(ube.el('th', 'pos', ''), ube.el('th', null, 'Player'));
+    dates.forEach((d, i) => { const th = ube.el('th', 'day' + (d === today ? ' today' : '')); th.append(document.createTextNode(DAYS[i]), ube.el('div', 'ube-small ube-muted', d === today ? 'Today' : String(Number(d.slice(8))))); hr.appendChild(th); });
+    hr.appendChild(ube.el('th', 'num', 'Week'));
+    thead.appendChild(hr);
+    const tb = document.createElement('tbody');
+    ps.forEach((p) => {
+      const tr = document.createElement('tr'); tr.dataset.key = p.player; if (p.il) tr.className = 'il';
+      const name = ube.el('td', 'pl'); name.append(document.createTextNode(p.player + ' '));
+      if (p.status === 'Out') name.appendChild(ube.el('span', 'sl-out', 'Out')); else if (p.status && p.status !== 'Healthy') name.appendChild(ube.el('span', 'ube-pill warn', p.status));
+      if (p.il) name.appendChild(ube.el('span', 'ube-small ube-muted', ' IL'));
+      name.appendChild(ube.el('div', 'ube-small ube-muted', p.nba_team));
+      tr.append(ube.el('td', 'pos', p.pos.split(',')[0]), name);
+      let n = 0;
+      dates.forEach((d) => {
+        const g = (games[p.nba_team] || {})[d]; const td = ube.el('td', 'day' + (d === today ? ' today' : '') + (d < today ? ' past' : ''));
+        if (g) { const ok = plays(p, d); if (ok) n += 1; td.appendChild(ube.el('span', 'g' + (ok ? '' : ' out'), (g.home ? '' : '@') + g.opp)); td.title = p.player + ': ' + (g.home ? 'vs ' : 'at ') + g.opp + (ok ? '' : ' (injured)'); }
+        else td.appendChild(ube.el('span', 'ube-muted', '·'));
+        tr.appendChild(td);
+      });
+      tr.appendChild(ube.el('td', 'num wk', String(n)));
+      tb.appendChild(tr);
+    });
+    grid.replaceChildren(thead, tb);
+  }
+  dash.onData(draw);
+})();
+
+/* Settings: live values */
+(() => {
+  dash.onData(() => {
+    const R = window.UBE_RANK;
+    document.getElementById('set-count').textContent = String(R.COUNT);
+    document.getElementById('set-sims').textContent = d3.format(',')(R.SIMS);
+    document.getElementById('set-cv').textContent = Object.entries(R.CV).map(([c, v]) => c + ' ±' + Math.round(v * 100) + '%').join(', ') + ', ' + Object.entries(R.PCT_SD).map(([c, v]) => c + ' ±' + d3.format('.3f')(v).replace(/^0/, '')).join(', ');
+    const P = ube.ready('players');
+    if (P) {
+      const f = P.filter((p) => p.htb_rank == null).map((p) => p.player);
+      document.getElementById('set-fallback').textContent = f.length ? f.length + ' (' + f.join(', ') + ')' : 'none';
+    }
+    const at = P && P[0] && P[0].htb_date;
+    document.getElementById('set-htb').textContent = at ? new Date(at + 'T12:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+  });
+})();
+</script>

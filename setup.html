@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>UBE Hub: Yahoo login</title>
+<link rel="stylesheet" href="shim.css">
+<style>
+.setup { max-width: 40rem; margin: 0 auto; padding: 32px 16px; font: 15px/1.5 var(--font-anthropic-sans); color: var(--color-fg); }
+.setup h1 { font: 400 1.8rem/1.2 var(--font-anthropic-serif); margin: 0 0 8px; }
+.setup h2 { font-size: 1rem; margin: 28px 0 6px; }
+.setup p { margin: 6px 0; color: var(--color-fg-muted); }
+.setup input { width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--color-border-line); border-radius: 8px; background: var(--color-panel); color: var(--color-fg); }
+.setup a.btn, .setup button { display: inline-block; margin-top: 10px; font: inherit; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--color-fg); background: var(--color-fg); color: var(--color-bg); text-decoration: none; cursor: pointer; }
+.setup a.btn[aria-disabled="true"] { opacity: .4; pointer-events: none; }
+.setup code { display: block; margin-top: 8px; padding: 8px 10px; border: 1px solid var(--color-border-line); border-radius: 8px; background: var(--color-panel); word-break: break-all; min-height: 2.4em; }
+</style>
+</head>
+<body>
+<main class="setup">
+  <h1>Yahoo login (one time)</h1>
+  <p>Nothing you type here is saved or sent anywhere. This page only builds a link.</p>
+
+  <h2>1. Paste your Yahoo Client ID</h2>
+  <p>From your app on developer.yahoo.com (the long text that starts with dj0y).</p>
+  <input id="cid" autocomplete="off" spellcheck="false" aria-label="Yahoo Client ID">
+  <a class="btn" id="go" target="_blank" rel="noopener" aria-disabled="true" href="#">Open Yahoo and click Agree</a>
+
+  <h2>2. Copy the address of the page that fails to load</h2>
+  <p>After you click Agree, the browser goes to an address starting with https://localhost:8080 and shows “can’t be reached”. That is expected. Copy the whole address from the address bar and paste it here.</p>
+  <input id="addr" autocomplete="off" spellcheck="false" aria-label="The localhost address">
+  <code id="code" aria-live="polite"></code>
+  <button id="copy" type="button">Copy code</button>
+
+  <h2>3. Give the code to GitHub within a few minutes</h2>
+  <p>Open the Yahoo login workflow, click “Run workflow”, paste the code, and click the green “Run workflow” button.</p>
+  <a class="btn" target="_blank" rel="noopener" href="https://github.com/ayojieo/ube-league-hub/actions/workflows/yahoo-login.yml">Open the Yahoo login workflow</a>
+</main>
+<script>
+(() => {
+  const cid = document.getElementById('cid'); const go = document.getElementById('go');
+  const addr = document.getElementById('addr'); const code = document.getElementById('code');
+  cid.addEventListener('input', () => {
+    const v = cid.value.trim();
+    go.setAttribute('aria-disabled', v ? 'false' : 'true');
+    go.href = v ? 'https://api.login.yahoo.com/oauth2/request_auth?client_id=' + encodeURIComponent(v) + '&redirect_uri=' + encodeURIComponent('https://localhost:8080') + '&response_type=code&language=en-us' : '#';
+  });
+  addr.addEventListener('input', () => {
+    const m = /[?&]code=([^&#\s]+)/.exec(addr.value);
+    code.textContent = m ? m[1] : (addr.value.trim() ? 'No code found in that address.' : '');
+    code.dataset.ok = m ? '1' : '';
+  });
+  document.getElementById('copy').addEventListener('click', async (e) => {
+    if (!code.dataset.ok) return;
+    try { await navigator.clipboard.writeText(code.textContent); e.target.textContent = 'Copied'; } catch (err) { e.target.textContent = 'Select the code and copy it'; }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+/* UBE League Hub: standalone look. Recreates the base styles and design tokens the page expects. */
+:root {
+  color-scheme: light dark;
+  --color-bg: #f9f9f7; --color-panel: #ffffff; --color-fg: #0b0b0b; --color-fg-muted: #898781;
+  --color-border-line: rgb(11 11 11 / 0.1);
+  --color-ok: #006300; --color-bad: #8e2626; --color-warn: #734500;
+  --cds-chart-muted: #c3c2b7; --cds-chart-grid: rgb(11 11 11 / 0.1); --cds-chart-axis: #c3c2b7;
+  --cds-chart-categorical-1: #2a78d6; --cds-chart-categorical-2: #eb6834; --cds-chart-categorical-3: #1baf7a; --cds-chart-categorical-4: #eda100;
+  --cds-chart-categorical-5: #e87ba4; --cds-chart-categorical-6: #008300; --cds-chart-categorical-7: #6250d6; --cds-chart-categorical-8: #e34948;
+  --cds-font-size-body: 0.875rem; --cds-font-size-caption: 0.75rem; --cds-font-size-heading: 0.9375rem; --cds-font-size-title: 1.375rem;
+  --cds-font-weight-medium: 500;
+  --cds-gap-xs: 0.5rem; --cds-gap-sm: 0.75rem; --cds-gap-md: 1rem; --cds-gap-lg: 1.75rem;
+  --cds-pad-xs: 0.375rem; --cds-pad-sm: 0.5rem; --cds-pad-md: 0.75rem; --cds-pad-lg: 1rem; --cds-pad-xl: 1.5rem;
+  --cds-radius: 0.5rem; --cds-dur-slow: .45s;
+  --font-anthropic-sans: "Anthropic Sans", "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-anthropic-serif: "Anthropic Serif", "Source Serif 4", ui-serif, Georgia, "Times New Roman", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0b0b0b; --color-panel: #1a1a19; --color-fg: #f0efec; --color-fg-muted: #898781;
+    --color-border-line: rgb(255 255 255 / 0.1);
+    --color-ok: #0ca30c; --color-bad: #ec7e7e; --color-warn: #db9300;
+    --cds-chart-muted: #5f5e5a; --cds-chart-grid: rgb(255 255 255 / 0.1); --cds-chart-axis: #383835;
+    --cds-chart-categorical-1: #3987e5; --cds-chart-categorical-2: #d95926; --cds-chart-categorical-3: #199e70; --cds-chart-categorical-4: #c98500;
+    --cds-chart-categorical-5: #d55181; --cds-chart-categorical-6: #008300; --cds-chart-categorical-7: #9085e9; --cds-chart-categorical-8: #e66767;
+  }
+}
+*, ::before, ::after { box-sizing: border-box; border: 0 solid var(--color-border-line); }
+html { -webkit-text-size-adjust: 100%; -webkit-font-smoothing: antialiased; tab-size: 4; line-height: 1.5; }
+body { margin: 0; background: var(--color-bg); color: var(--color-fg); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+#dash-root, #hub-foot { color: var(--color-fg); font-size: 14px; line-height: 1.45; }
+#dash-root:not(:empty) { padding: var(--dash-gutter, clamp(var(--cds-pad-md), 4%, var(--cds-pad-xl))); }
+:where(#dash-root) :where(h1, h2, h3, h4, h5, h6) { font-size: inherit; font-weight: inherit; margin: 0; }
+:where(#dash-root) :where(p, ul, ol, li, figure, blockquote, dl, dd, pre, hr) { margin: 0; padding: 0; }
+:where(#dash-root) :where(ul, ol) { list-style: none; }
+:where(#dash-root) :where(a) { color: inherit; text-decoration: inherit; cursor: pointer; }
+:where(#dash-root) :where(b, strong) { font-weight: 600; }
+:where(#dash-root) :where(table) { border-collapse: collapse; border-color: inherit; text-indent: 0; }
+:where(#dash-root) :where(button, input, select, textarea) { font: inherit; color: inherit; margin: 0; padding: 0; background-color: transparent; letter-spacing: inherit; border-radius: 0; }
+:where(#dash-root) :where(select) { line-height: normal; }
+:where(#dash-root) :where(textarea) { resize: vertical; }
+:where(#dash-root) :where(svg, img, canvas) { display: block; vertical-align: middle; }
+[hidden] { display: none !important; }
+
+/* Parts added outside the page: season banner, passcode field, footer. */
+#hub-banner { max-width: 1240px; margin: 16px auto 0; padding: 10px 16px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); color: var(--color-fg); font: 14px/1.45 var(--font-anthropic-sans); text-align: center; }
+#hub-banner a, #hub-foot a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+#hub-foot { max-width: 1240px; margin: 0 auto; padding: 0 16px 32px; text-align: center; color: var(--color-fg-muted); font-family: var(--font-anthropic-sans); font-size: 12px; }
+#hub-pass { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 12px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-bg); font-size: 12px; }
+#hub-pass input { font: inherit; padding: 4px 8px; border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); background: var(--color-panel); color: var(--color-fg); min-width: 12rem; }
+#hub-pass button { font: inherit; padding: 4px 10px; border: 1px solid var(--color-fg); border-radius: var(--cds-radius); background: var(--color-fg); color: var(--color-bg); cursor: pointer; }
+#hub-pass button.plain { background: var(--color-bg); color: var(--color-fg); border-color: var(--color-border-line); }
+#news-table.hub-no-angle th:nth-child(3), #news-table.hub-no-angle td:nth-child(3) { display: none; }

@@ -1,0 +1,26 @@
+{
+  "league_key": "478.l.211732",
+  "season": 2026,
+  "my_team_id": 1,
+  "week1_start": "2026-10-20",
+  "week2_start": "2026-10-26",
+  "regular_season_last_week": 19,
+  "playoff_weeks": [20, 21, 22],
+  "season_end": "2027-04-04",
+  "playoff_teams": 6,
+  "rivalry_weeks": [2, 6, 12, 16, 19],
+  "trade_deadline": "2027-03-04",
+  "timezone": "Asia/Manila",
+  "managers": {
+    "1": "Allen",
+    "2": "Steven",
+    "3": "Paulo",
+    "4": "Shondrae",
+    "5": "Justin",
+    "6": "Nathaniel",
+    "7": "Jayden",
+    "8": "Nathan",
+    "9": "JJ",
+    "10": "Dean"
+  }
+}
