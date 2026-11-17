@@ -157,6 +157,15 @@
       catch (err) { console.error('page script ' + (i + 1), err); }
     });
   }
+  /* Where the league data (scores, standings, rosters, trades) came from, and when: data/state.json. */
+  const LEAGUE_SOURCE = { yahoo: ['Yahoo', 'updated'], sheet: ['Google Sheet', 'pasted'] };
+  const STALE_DAYS = 8;
+  function leagueData(state) {
+    const kind = state && LEAGUE_SOURCE[state.league_source];
+    const when = state && state.league_updated ? new Date(state.league_updated) : null;
+    if (!kind || !when || isNaN(when)) return null;
+    return { name: kind[0], verb: kind[1], when, day: when.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
+  }
   function footer(state, archive) {
     const foot = document.getElementById('hub-foot'); if (!foot) return;
     const parts = [];
@@ -164,6 +173,8 @@
       const d = new Date(state.updated);
       if (!isNaN(d)) parts.push(document.createTextNode('Updated ' + d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })));
     }
+    const league = leagueData(state);
+    if (league) parts.push(el('span', { id: 'hub-league-source' }, 'League data: ' + league.name + ' · ' + league.verb + ' ' + league.day));
     if (!site.archived && Array.isArray(archive) && archive.length) {
       const span = el('span', null, 'Past seasons: ');
       archive.forEach((s, i) => { if (i) span.append(', '); span.append(el('a', { href: 'archive/' + encodeURIComponent(s) + '/' }, s)); });
@@ -178,6 +189,12 @@
     if (state && state.season_over) {
       b.replaceChildren(document.createTextNode('The ' + (state.season || '') + ' season is over. '));
       if (Array.isArray(archive) && archive.includes(state.season)) b.append(el('a', { href: 'archive/' + encodeURIComponent(state.season) + '/' }, 'View the final hub'));
+      b.hidden = false;
+      return;
+    }
+    const league = leagueData(state);
+    if (league && Date.now() - league.when.getTime() > STALE_DAYS * 86400000) {
+      b.textContent = 'League data last updated ' + league.day + '.';
       b.hidden = false;
     }
   }

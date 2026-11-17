@@ -1,0 +1,266 @@
+[
+ {
+  "player": "Collin Murray-Boyles",
+  "nba_team": "TOR",
+  "ube_team": "The Haliban",
+  "status": "Questionable",
+  "est_return": "—",
+  "detail": "Illness; questionable Mon vs MEM"
+ },
+ {
+  "player": "Trey Murphy III",
+  "nba_team": "NOP",
+  "ube_team": "The Haliban",
+  "status": "Out",
+  "est_return": "—",
+  "detail": "Knee; out Fri vs MEM"
+ },
+ {
+  "player": "Tyrese Haliburton",
+  "nba_team": "IND",
+  "ube_team": "The Haliban",
+  "status": "Out",
+  "est_return": "Nov 22",
+  "detail": "Hamstring; out at least 10 more days"
+ },
+ {
+  "player": "Jalen Duren",
+  "nba_team": "DET",
+  "ube_team": "The Haliban",
+  "status": "Out",
+  "est_return": "Nov 24",
+  "detail": "Hamstring; on-court work, re-evaluate"
+ },
+ {
+  "player": "Mark Williams",
+  "nba_team": "PHX",
+  "ube_team": "The Haliban",
+  "status": "Out",
+  "est_return": "Feb 3",
+  "detail": "Shoulder labrum surgery"
+ },
+ {
+  "player": "Evan Mobley",
+  "nba_team": "CLE",
+  "ube_team": "Yaxel and Em",
+  "status": "Out",
+  "est_return": "Nov 14",
+  "detail": "Toe; out Fri vs MIA"
+ },
+ {
+  "player": "Immanuel Quickley",
+  "nba_team": "TOR",
+  "ube_team": "Paulo's Perfect Team",
+  "status": "Questionable",
+  "est_return": "—",
+  "detail": "Hamstring; questionable Mon vs MEM"
+ },
+ {
+  "player": "Keyonte George",
+  "nba_team": "UTA",
+  "ube_team": "Paulo's Perfect Team",
+  "status": "Questionable",
+  "est_return": "—",
+  "detail": "Ankle; questionable Wed vs ORL"
+ },
+ {
+  "player": "Scottie Barnes",
+  "nba_team": "TOR",
+  "ube_team": "Paulo's Perfect Team",
+  "status": "Out",
+  "est_return": "Nov 15",
+  "detail": "Groin"
+ },
+ {
+  "player": "Kawhi Leonard",
+  "nba_team": "TOR",
+  "ube_team": "Paulo's Perfect Team",
+  "status": "Out",
+  "est_return": "Nov 23",
+  "detail": "Knee; individual on-court work"
+ },
+ {
+  "player": "Luka Dončić",
+  "nba_team": "LAL",
+  "ube_team": "Master Luka’s Cotton Pickers",
+  "status": "Day-to-day",
+  "est_return": "Nov 15",
+  "detail": "Ankle; coach says he's fine"
+ },
+ {
+  "player": "Jalen Smith",
+  "nba_team": "CHI",
+  "ube_team": "Master Luka’s Cotton Pickers",
+  "status": "Day-to-day",
+  "est_return": "—",
+  "detail": "Hand; left Fri game, did not return"
+ },
+ {
+  "player": "Zach Edey",
+  "nba_team": "MEM",
+  "ube_team": "Master Luka’s Cotton Pickers",
+  "status": "Out",
+  "est_return": "Nov 14",
+  "detail": "Left ankle management; out Fri vs NOP"
+ },
+ {
+  "player": "Caleb Wilson",
+  "nba_team": "CHI",
+  "ube_team": "Master Luka’s Cotton Pickers",
+  "status": "Out",
+  "est_return": "Dec 13",
+  "detail": "Hand; out 4–6 weeks"
+ },
+ {
+  "player": "Lauri Markkanen",
+  "nba_team": "UTA",
+  "ube_team": "Master Luka’s Cotton Pickers",
+  "status": "Out",
+  "est_return": "Jan 4",
+  "detail": "Right hand fracture"
+ },
+ {
+  "player": "Paolo Banchero",
+  "nba_team": "ORL",
+  "ube_team": "Master Luka’s Cotton Pickers",
+  "status": "Out",
+  "est_return": "Nov 22",
+  "detail": "High right ankle sprain"
+ },
+ {
+  "player": "Austin Reaves",
+  "nba_team": "LAL",
+  "ube_team": "DAVRAA Boys",
+  "status": "Day-to-day",
+  "est_return": "Nov 15",
+  "detail": "Heel; day-to-day ahead of Sun vs PHX"
+ },
+ {
+  "player": "Stephen Curry",
+  "nba_team": "GSW",
+  "ube_team": "DAVRAA Boys",
+  "status": "Out",
+  "est_return": "Dec 12",
+  "detail": "Oblique tear; re-evaluate in two weeks"
+ },
+ {
+  "player": "Ja Morant",
+  "nba_team": "POR",
+  "ube_team": "DAVRAA Boys",
+  "status": "Out",
+  "est_return": "Dec 1",
+  "detail": "Hamstring; may be back sooner"
+ },
+ {
+  "player": "Jaren Jackson Jr.",
+  "nba_team": "UTA",
+  "ube_team": "DAVRAA Boys",
+  "status": "Out",
+  "est_return": "Dec 14",
+  "detail": "Torn right MCL"
+ },
+ {
+  "player": "De'Aaron Fox",
+  "nba_team": "SAS",
+  "ube_team": "Nathaniel's Notable Team",
+  "status": "Questionable",
+  "est_return": "—",
+  "detail": "Left hip; questionable Fri vs GSW"
+ },
+ {
+  "player": "Brandon Miller",
+  "nba_team": "CHA",
+  "ube_team": "Nathaniel's Notable Team",
+  "status": "Day-to-day",
+  "est_return": "Nov 15",
+  "detail": "Groin"
+ },
+ {
+  "player": "Ajay Mitchell",
+  "nba_team": "OKC",
+  "ube_team": "Nathaniel's Notable Team",
+  "status": "Out",
+  "est_return": "Nov 15",
+  "detail": "Ankle; out Fri vs LAC"
+ },
+ {
+  "player": "Dejounte Murray",
+  "nba_team": "NOP",
+  "ube_team": "Jayden's Amazing Team",
+  "status": "Out",
+  "est_return": "Nov 20",
+  "detail": "Ankle; out Fri vs MEM"
+ },
+ {
+  "player": "Jimmy Butler III",
+  "nba_team": "GSW",
+  "ube_team": "Jayden's Amazing Team",
+  "status": "Out",
+  "est_return": "Jan 2",
+  "detail": "Torn right ACL"
+ },
+ {
+  "player": "Yves Missi",
+  "nba_team": "NOP",
+  "ube_team": "Jayden's Amazing Team",
+  "status": "Out",
+  "est_return": "Nov 14",
+  "detail": "Knee; out Fri vs MEM"
+ },
+ {
+  "player": "Chet Holmgren",
+  "nba_team": "OKC",
+  "ube_team": "Jayden's Amazing Team",
+  "status": "Out",
+  "est_return": "Jan 2",
+  "detail": "Patellar tendon tear"
+ },
+ {
+  "player": "Jusuf Nurkić",
+  "nba_team": "UTA",
+  "ube_team": "Nathan's Nifty Team",
+  "status": "Out",
+  "est_return": "Nov 20",
+  "detail": "Right foot; re-evaluate Nov 20"
+ },
+ {
+  "player": "Kon Knueppel",
+  "nba_team": "CHA",
+  "ube_team": "Nathan's Nifty Team",
+  "status": "Out",
+  "est_return": "Dec 12",
+  "detail": "Left hamstring strain"
+ },
+ {
+  "player": "Paul George",
+  "nba_team": "BOS",
+  "ube_team": "JJ's Official Team",
+  "status": "Day-to-day",
+  "est_return": "Nov 15",
+  "detail": "Illness"
+ },
+ {
+  "player": "Anthony Edwards",
+  "nba_team": "MIN",
+  "ube_team": "JJ's Official Team",
+  "status": "Out",
+  "est_return": "Dec 21",
+  "detail": "Right knee procedure"
+ },
+ {
+  "player": "LeBron James",
+  "nba_team": "PHI",
+  "ube_team": "Barangay Ginebra San Miguel",
+  "status": "Day-to-day",
+  "est_return": "Nov 15",
+  "detail": "Back; Yahoo lists questionable"
+ },
+ {
+  "player": "Brandon Ingram",
+  "nba_team": "LAC",
+  "ube_team": "Barangay Ginebra San Miguel",
+  "status": "Out",
+  "est_return": "Nov 19",
+  "detail": "Achilles; out Fri vs OKC"
+ }
+]

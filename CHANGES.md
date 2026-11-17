@@ -27,10 +27,13 @@ Check it yourself: compare `page.html` with the Claude hub's page; only these th
 - News table: the "Fantasy angle" column is hidden while every headline has no angle (headlines only).
 - Trade market: saved in a Google Sheet. Saving asks for the passcode once per browser.
 - Footer: "Updated <time>" and links to past seasons. Banner when a season is over or when viewing an archive.
+- Footer (added with the Google Sheet switch): "League data: Yahoo · updated <date>" or "League data: Google Sheet · pasted <date>", from `data/state.json` (`league_source`, `league_updated`).
+- Banner (added with the Google Sheet switch): "League data last updated <date>." when the league data is more than 8 days old. Not shown in archives or after the season.
 
 ## Data differences
 
 - News: ESPN headlines with links, no fantasy-angle text.
 - Injury detail: body part only (for example "Left hamstring"), from ESPN.
 - NBA schedule: the whole regular season is loaded, so Matchup and Weekly Slate can show any week.
-- Changelog rows are written by the script (for example "Week 5 live scores; injuries; news.").
+- Changelog rows are written by the script (for example "Week 5 live scores; injuries; news."). When the league data comes from the Google Sheet they say so ("Week 5 final; standings; 3 roster moves (from Google Sheet); injuries.").
+- League data source: `config/sources.json` chooses Yahoo or the Google Sheet. Both build the same data files. From the sheet there is no waiver order (the last known one is kept), no Yahoo injury note (ESPN's detail is used, else the last known one) and no Yahoo season averages for brand-new players outside Hashtagbasketball's top 200.

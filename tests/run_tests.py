@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dry runs of the update scripts with made-up Yahoo / ESPN / Hashtagbasketball / NBA answers.
+"""Dry runs of the update scripts with made-up Yahoo / Google Sheet / ESPN / Hashtagbasketball / NBA answers.
 Nothing here touches the internet or the real data: everything runs in a temporary copy of the repo.
 Run:  python3 tests/run_tests.py"""
 import copy
@@ -14,9 +14,14 @@ from xml.sax.saxutils import escape
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 WORK = tempfile.mkdtemp(prefix="ube-test-")
-for item in ("data", "config", "scripts", "archive", "index.html", "page.html", "shim.js", "shim.css"):
+FIXTURE = os.path.join(REPO, "tests", "fixtures", "data")  # the hub's data on Nov 16 2026, so the checks do not depend on live data
+for item in ("config", "scripts", "archive", "index.html", "page.html", "shim.js", "shim.css"):
     src = os.path.join(REPO, item)
     (shutil.copytree if os.path.isdir(src) else shutil.copy2)(src, os.path.join(WORK, item))
+shutil.copytree(FIXTURE, os.path.join(WORK, "data"))
+SOURCES = os.path.join(WORK, "config", "sources.json")
+with open(SOURCES, "w", encoding="utf-8") as f:
+    f.write('{"league_data": "yahoo"}\n')
 DISPLAY = os.path.join(WORK, "config", "display_names.json")
 SAVED_DISPLAY = open(DISPLAY, encoding="utf-8").read() if os.path.exists(DISPLAY) else None
 if SAVED_DISPLAY is not None:
@@ -442,7 +447,7 @@ check("code exchanged, key saved to file, only 'ok' printed", code == 0 and open
 
 print("11. Display names (config/display_names.json), with Yahoo down")
 shutil.rmtree(os.path.join(WORK, "data"))
-shutil.copytree(os.path.join(REPO, "data"), os.path.join(WORK, "data"))
+shutil.copytree(FIXTURE, os.path.join(WORK, "data"))
 json.dump(json.load(open(os.path.join(REPO, "config", "league.json"))), open(cfg_path, "w"))
 with open(DISPLAY, "w", encoding="utf-8") as f:
     f.write(SAVED_DISPLAY or '{"1": "Team Hali", "4": "Team Luka"}')
@@ -460,6 +465,285 @@ for tid, n in (("1", "Team Hali"), ("4", "Team Luka")):
 code, out = run(w2, "2026-11-18")
 blob = "".join(open(os.path.join(WORK, "data", f), encoding="utf-8").read() for f in ("schedule.json", "standings.json", "rosters.json", "teams.json"))
 check("Yahoo's own names do not come back once Yahoo works", "Haliban" not in blob and "Cotton Pickers" not in blob and "Team Hali" in blob and code == 0, out)
+
+
+# ======================================================================================================
+# Google Sheet as the league source (config/sources.json: "league_data": "sheet")
+# ======================================================================================================
+SHEET_STATUS = {"postevent": "Final", "midevent": "In progress"}
+
+
+class SheetWorld(World):
+    """The same fake league, also served the way the Google Sheet web app serves it (?tab=league)."""
+
+    def __init__(self):
+        super().__init__()
+        self.yahoo_calls = 0
+        self.sheet_calls = 0
+        self.sheet_fail = False
+        self.edit = None            # function(sheet answer) -> changed answer
+        self.pasted = "2026-11-16T07:05:00.000Z"
+
+    def sheet(self):
+        scores = []
+        for r in self.schedule:
+            status = self.week_status.get(r["week"], "preevent")
+            if status == "preevent":
+                continue
+            wa, wb, _ = self.scores.get(r["matchup"], (r["cats_a"] or 0, r["cats_b"] or 0, 0))
+            scores.append({"week": str(r["week"]), "team_a": r["team_a"], "cats_a": str(wa), "cats_b": str(wb), "team_b": r["team_b"], "status": SHEET_STATUS[status]})
+        standings = [{"rank": str(rank), "team": self.name[tid], "w": str(w), "l": str(l), "t": str(t)} for tid, rank, w, l, t in self.standings]
+        rosters = [{"team": self.name[t["team_id"]], "player": p["player"], "nba_team": p["nba"], "pos": p["pos"].replace(",", ", "), "slot": p["slot"], "status": p["status"]}
+                   for t in self.teams for p in self.rosters[t["team_id"]]]
+        trades = [{"team_a": self.name[a], "a_gets": ", ".join(ag), "team_b": self.name[b], "b_gets": ", ".join(bg), "processes": ""}
+                  for status, a, b, ag, bg in self.trades if status == "accepted"]
+        return {"ok": True, "updated": self.pasted, "teams": [{"team_id": t["team_id"], "name": self.name[t["team_id"]]} for t in self.teams],
+                "scores": scores, "standings": standings, "rosters": rosters + [{"team": "END"}], "trades": trades}
+
+    def fetch(self, url, headers=None, data=None, timeout=40):
+        if "script.google.com" in url:
+            self.sheet_calls += 1
+            assert url.endswith("tab=league"), url
+            if self.sheet_fail:
+                raise RuntimeError("HTTP 500 for " + url.split("?")[0])
+            answer = self.sheet()
+            return json.dumps(self.edit(answer) if self.edit else answer)
+        if "yahoo" in url:
+            self.yahoo_calls += 1
+        return super().fetch(url, headers, data, timeout)
+
+
+def reset(source, display=None):
+    shutil.rmtree(os.path.join(WORK, "data"))
+    shutil.copytree(FIXTURE, os.path.join(WORK, "data"))
+    json.dump(json.load(open(os.path.join(REPO, "config", "league.json"))), open(cfg_path, "w"))
+    with open(SOURCES, "w", encoding="utf-8") as f:
+        json.dump({"league_data": source}, f)
+    if display:
+        json.dump(display, open(DISPLAY, "w", encoding="utf-8"))
+    elif os.path.exists(DISPLAY):
+        os.remove(DISPLAY)
+
+
+def league_week():
+    """The same week of roster moves, an IL move and a trade, for both sources."""
+    lw = SheetWorld()
+    lw.rosters["1"] = [p for p in lw.rosters["1"] if p["player"] != "Toumani Camara"]
+    lw.rosters["1"].append({"player": "Listed Rookie", "nba": "NY", "pos": "C", "slot": "BN", "status": ""})
+    lw.extra_htb["Listed Rookie"] = {"fgm": 5.0, "fga": 9.0, "ftm": 2.0, "fta": 3.0, "tpm": 0.5, "pts": 12.5, "reb": 8.0, "ast": 1.5, "stl": 0.7, "blk": 1.6, "tov": 1.4, "value": 1.11, "gp": 11}
+    for p in lw.rosters["1"]:
+        if p["player"] == "Anthony Black":
+            p["slot"] = "IL+"
+    lw.rosters["3"][0]["status"] = "Q"
+    lw.trades = [("accepted", "8", "9", ["Karl-Anthony Towns"], ["Derrick White", "Devin Booker"]), ("proposed", "1", "3", ["Secret Offer"], ["Hidden Player"])]
+    return lw
+
+
+print("12. Google Sheet source builds the same files as Yahoo")
+reset("yahoo")
+wy = league_week()
+code_y, out_y = run(wy, "2026-11-16")
+from_yahoo = {k: json.loads(v) for k, v in snapshot().items()}
+reset("sheet")
+ws = league_week()
+taglines = {m["team"]: m["tagline"] for m in load("managers")}
+code_s, out_s = run(ws, "2026-11-16")
+from_sheet = {k: json.loads(v) for k, v in snapshot().items()}
+check("both runs succeed", code_y == 0 and code_s == 0, out_s)
+check("Yahoo is never called in sheet mode", ws.yahoo_calls == 0 and ws.sheet_calls == 1 and wy.yahoo_calls > 0 and wy.sheet_calls == 0, (ws.yahoo_calls, ws.sheet_calls))
+same = ["schedule.json", "rosters.json", "players.json", "trades.json", "managers.json", "teams.json", "nba_games.json", "news.json", "htb.json"]
+check("schedule, rosters, players, trades, team cards identical", all(from_sheet[f] == from_yahoo[f] for f in same), [f for f in same if from_sheet[f] != from_yahoo[f]])
+no_detail = lambda rows: [{k: v for k, v in r.items() if k != "detail"} for r in rows]
+inj_s = {r["player"]: r for r in from_sheet["injuries.json"]}
+old_inj = {r["player"]: r for r in json.load(open(os.path.join(FIXTURE, "injuries.json")))}
+check("injuries identical; ESPN detail used, else the last known detail is kept (the sheet has no injury note)",
+      no_detail(from_sheet["injuries.json"]) == no_detail(from_yahoo["injuries.json"]) and inj_s["Tyrese Haliburton"]["detail"] == "Left hamstring"
+      and inj_s["Trey Murphy III"]["detail"] == old_inj["Trey Murphy III"]["detail"] != "", inj_s["Trey Murphy III"])
+no_waiver = lambda rows: [{k: v for k, v in r.items() if k != "waiver"} for r in rows]
+check("standings identical (pct and gb computed the same way)", no_waiver(from_sheet["standings.json"]) == no_waiver(from_yahoo["standings.json"]) and from_sheet["standings.json"][1]["pct"] == ".629" and from_sheet["standings.json"][1]["gb"] == "1")
+check("waiver order kept from before (the sheet has no waiver column)", {r["team"]: r["waiver"] for r in from_sheet["standings.json"]} == {r["team"]: r["waiver"] for r in json.load(open(os.path.join(FIXTURE, "standings.json")))})
+sched = load("schedule")
+check("Week 4 Final from the sheet; Week 5 live by today's date with no scores; later weeks not started",
+      all(r["status"] == "Final" for r in sched if r["week"] == 4) and all(r["status"] == "In progress" and r["cats_a"] is None for r in sched if r["week"] == 5)
+      and all(r["status"] == "Not started" for r in sched if r["week"] > 5))
+pl = {p["player"]: p for p in load("players")}
+check("IL slot, positions and NBA code read from the sheet", pl["Anthony Black"]["il"] == "IL" and pl["Anthony Black"]["avail"] == 0 and pl["Listed Rookie"]["nba_team"] == "NYK" and pl["Listed Rookie"]["pos"] == "C"
+      and pl["Listed Rookie"]["role"] == "Bigs" and all("," not in p["pos"] or " " not in p["pos"] for p in pl.values()))
+check("roster order follows the sheet rows", [r["player"] for r in load("rosters") if r["team"] == "The Haliban"] == [p["player"] for p in ws.rosters["1"]])
+check("taglines untouched", {m["team"]: m["tagline"] for m in load("managers")} == taglines)
+log_s, log_y = load("log")[-1]["change"], from_yahoo["log.json"][-1]["change"]
+check("changelog says the league changes came from the sheet", "(from Google Sheet)" in log_s and log_s.startswith("Week 4 final; standings") and "(from Google Sheet)" not in log_y, log_s)
+st = load("state")
+check("state: league_source and last-pasted time", st["league_source"] == "sheet" and st["league_updated"] == ws.pasted and from_yahoo["state.json"]["league_source"] == "yahoo" and from_yahoo["state.json"]["league_updated"].endswith("Z"), st)
+check("summary names the source", "**League data source:** Google Sheet" in out_s and "**League data source:** Yahoo" in out_y and "Google Sheet: scores" in out_s and "Problems" not in out_s, out_s)
+snap = snapshot()
+code, out = run(ws, "2026-11-16")
+check("same sheet again: nothing changes", code == 0 and snapshot() == snap and "**Changed:** nothing" in out, [k for k in snap if snapshot()[k] != snap[k]])
+ws.pasted = "2026-11-16T09:00:00.000Z"
+code, out = run(ws, "2026-11-16")
+check("sheet pasted again with the same data: only the pasted time moves", load("state")["league_updated"] == ws.pasted and all(snapshot()[k] == snap[k] for k in snap if k != "state.json"))
+
+print("13. Sheet: bad rows are reported and skipped, old data kept")
+before_run = snapshot()
+old_w5 = {r["matchup"]: r for r in load("schedule") if r["week"] == 5}
+
+
+def bad_rows(a):
+    w5 = [r for r in ws.schedule if r["week"] == 5]
+    w3 = [r for r in ws.schedule if r["week"] == 3][0]
+    a["scores"] += [
+        {"week": "5", "team_a": w5[0]["team_a"], "cats_a": "5", "cats_b": "3", "team_b": w5[0]["team_b"], "status": "In progress"},        # good
+        {"week": "5", "team_a": w5[1]["team_b"], "cats_a": "2", "cats_b": "6", "team_b": w5[1]["team_a"], "status": "in progress"},        # good, sides swapped
+        {"week": "5", "team_a": w5[2]["team_a"], "cats_a": "6", "cats_b": "4", "team_b": w5[2]["team_b"], "status": "In progress"},        # 10 categories
+        {"week": "5", "team_a": "Nobody FC", "cats_a": "5", "cats_b": "4", "team_b": w5[3]["team_b"], "status": "In progress"},             # unknown team
+        {"week": "5", "team_a": w5[3]["team_a"], "cats_a": "5", "cats_b": "4", "team_b": w5[4]["team_b"], "status": "In progress"},        # not a matchup that week
+        {"week": "25", "team_a": w5[0]["team_a"], "cats_a": "5", "cats_b": "4", "team_b": w5[0]["team_b"], "status": "Final"},              # no such week
+        {"week": "1", "team_a": "The Haliban", "cats_a": "1", "cats_b": "1", "team_b": "Nathaniel's Notable Team", "status": "In progress"},  # reopen a Final week
+        {"week": "week", "team_a": "team_a", "cats_a": "cats_a", "cats_b": "cats_b", "team_b": "team_b", "status": "status"},               # pasted header row
+        {"week": "2", "team_a": "the haliban", "cats_a": "3", "cats_b": "6", "team_b": "PAULOS PERFECT TEAM", "status": "Final"},           # Final score corrected, sloppy names
+        {"week": "3 | %s | 7 | 2 | %s | Final" % (w3["team_a"], w3["team_b"]), "team_a": "", "cats_a": "", "cats_b": "", "team_b": "", "status": ""},  # whole line in column A
+    ]
+    a["standings"][3]["team"] = "Mystery Team"
+    rows = [r for r in a["rosters"] if r["team"] != "END"]
+    for r in rows:
+        if r["player"] == "Jalen Johnson":
+            r["team"] = "Halibans"                                                                        # unknown team: he stays where he was
+        if r["player"] == "Dyson Daniels":
+            r["slot"], r["status"] = "Bench", "Maybe"                                                     # unknown slot and status
+    rows.append({"team": "The Haliban", "player": "Nikola Jokic", "nba_team": "DEN", "pos": "C", "slot": "C", "status": ""})   # on two teams
+    rows.append({"team": "The Haliban", "player": "Bam Adebayo", "nba_team": "MIA", "pos": "PF,C", "slot": "BN", "status": ""})  # listed twice
+    rows += [{"team": "Yaxel and Em", "player": "Extra Man %s" % "abcdefgh"[i], "nba_team": "LAL", "pos": "SF", "slot": "BN", "status": ""} for i in range(6)]
+    rows.append({"team": "END", "player": "", "nba_team": "", "pos": "", "slot": "", "status": ""})
+    rows.append({"team": "Yaxel and Em", "player": "Old Paste Guy", "nba_team": "LAL", "pos": "SF", "slot": "BN", "status": ""})   # below END: ignored
+    a["rosters"] = rows
+    a["trades"] += [{"team_a": "Nobody FC", "a_gets": "X", "team_b": "The Haliban", "b_gets": "Y", "processes": ""},
+                    {"team_a": "DAVRAA Boys", "a_gets": "Player One,Player Two", "team_b": "Yaxel and Em", "b_gets": "Player Three", "processes": "Nov 18"}]
+    return a
+
+
+ws.edit = bad_rows
+code, out = run(ws, "2026-11-17")
+check("run still succeeds (the sheet was read)", code == 0, out)
+sched = {r["matchup"]: r for r in load("schedule")}
+w5 = [r for r in load("schedule") if r["week"] == 5]
+check("good rows applied, team order kept when sides are swapped", (w5[0]["cats_a"], w5[0]["cats_b"]) == (5, 3) and (w5[1]["cats_a"], w5[1]["cats_b"]) == (6, 2) and w5[0]["status"] == "In progress", w5[:2])
+check("10 categories, unknown team, wrong pairing: rows skipped", all(r["cats_a"] is None and r["status"] == "In progress" for r in w5[2:]) and len(w5) == 5
+      and "add up to 9 or less" in out and 'unknown team "Nobody FC"' in out and "is not a matchup on the schedule" in out and "the week must be 1 to 19" in out, out)
+check("a Final week is never reopened", sched["W1-1"]["status"] == "Final" and (sched["W1-1"]["cats_a"], sched["W1-1"]["cats_b"]) == (5, 4) and "is already Final" in out)
+check("a Final score can be corrected; names match without capitals or apostrophes", (sched["W2-1"]["cats_a"], sched["W2-1"]["cats_b"], sched["W2-1"]["status"]) == (3, 6, "Final"), sched["W2-1"])
+check("a line that stayed in column A (separated by |) still counts", (sched["W3-1"]["cats_a"], sched["W3-1"]["cats_b"]) == (7, 2), sched["W3-1"])
+check("standings with an unknown team: previous standings kept", snapshot()["standings.json"] == before_run["standings.json"] and 'Standings: unknown team "Mystery Team"' in out and "Kept the previous standings" in out)
+ro = load("rosters")
+team_of = {}
+for r in ro:
+    team_of.setdefault(r["player"], []).append(r["team"])
+check("unknown team row skipped, player stays on his team", team_of["Jalen Johnson"] == ["The Haliban"] and 'unknown team "Halibans" for Jalen Johnson' in out)
+check("player on two teams: reported, kept on his old team, accents ignored", team_of["Nikola Jokić"] == ["Paulo's Perfect Team"] and "Nikola Jokić is on two teams" in out and "Nikola Jokic" not in team_of)
+check("player listed twice on one team: once", team_of["Bam Adebayo"] == ["The Haliban"] and "Bam Adebayo is listed twice" in out)
+check("unknown slot and status reported", 'unknown slot "Bench" for Dyson Daniels' in out and 'unknown status "Maybe" for Dyson Daniels' in out and {p["player"]: p for p in load("players")}["Dyson Daniels"]["il"] == "")
+check("more than 18 players: warned", "Yaxel and Em has" in out and "the most a team can hold is 18" in out)
+check("rows below END ignored", "Old Paste Guy" not in team_of)
+check("new players outside Hashtagbasketball: no stats, capped, no Yahoo fallback",
+      {p["player"]: p for p in load("players")}["Extra Man a"]["source"] == "No stats yet (not in Hashtagbasketball top 200)" and {p["player"]: p for p in load("players")}["Extra Man a"]["value"] == -2.3 and ws.yahoo_calls == 0)
+tr = load("trades")
+check("trades: bad row skipped, good rows numbered in order", [t["deal"] for t in tr] == ["T1", "T2"] and tr[1] == {"deal": "T2", "team_a": "DAVRAA Boys", "a_gets": "Player One, Player Two", "team_b": "Yaxel and Em", "b_gets": "Player Three", "processes": "Nov 18"}
+      and "Trades: unknown team" in out, tr)
+
+print("14. Sheet: empty tabs, new pairings, sheet down")
+before_run = snapshot()
+
+
+def empty_rosters(a):
+    a["rosters"] = [{"team": "END"}]
+    a["standings"] = []
+    return a
+
+
+ws.edit = empty_rosters
+code, out = run(ws, "2026-11-18")
+check("empty Rosters tab keeps the rosters (never wiped)", code == 0 and [r["player"] for r in load("rosters")] == [r["player"] for r in json.loads(before_run["rosters.json"])] and "Rosters tab is empty" in out, out)
+check("empty Standings tab keeps the standings", snapshot()["standings.json"] == before_run["standings.json"] and "Standings tab is empty" in out)
+
+
+def one_team_missing(a):
+    a["rosters"] = [r for r in a["rosters"] if r["team"] != "DAVRAA Boys"]
+    return a
+
+
+ws.edit = one_team_missing
+code, out = run(ws, "2026-11-18")
+check("a team with no rows keeps its roster", len([r for r in load("rosters") if r["team"] == "DAVRAA Boys"]) == len(ws.rosters["5"]) and "no rows for DAVRAA Boys" in out, out)
+
+
+def new_pairings(a):
+    w16 = [dict(r) for r in ws.schedule if r["week"] == 16]
+    w16[0]["team_b"], w16[1]["team_b"] = w16[1]["team_b"], w16[0]["team_b"]
+    a["scores"] += [{"week": "16", "team_a": r["team_a"], "cats_a": "", "cats_b": "", "team_b": r["team_b"], "status": ""} for r in w16]
+    a["wanted"] = [[r["team_a"], r["team_b"]] for r in w16]
+    return a
+
+
+ws.edit = new_pairings
+code, out = run(ws, "2026-11-18")
+got = [(r["team_a"], r["team_b"], r["rivalry"], r["status"]) for r in load("schedule") if r["week"] == 16]
+want = {frozenset(x) for x in new_pairings(ws.sheet())["wanted"]}
+check("a whole week with new pairings is rebuilt, rivalry kept", {frozenset(x[:2]) for x in got} == want and all(x[2] == "Rivalry week" and x[3] == "Not started" for x in got) and len(load("schedule")) == 95, got)
+
+ws.edit = None
+ws.sheet_fail = True
+ws.espn.append(("Bam Adebayo", "Out", "OUT", "Knee", "", "", "2026-12-20"))
+before_run = snapshot()
+code, out = run(ws, "2026-11-19")
+check("sheet cannot be read: exit code 1 so GitHub emails", code == 1 and "Google Sheet: HTTP 500" in out and ws.yahoo_calls == 0, out)
+check("league files untouched, injuries still refreshed", all(snapshot()[f] == before_run[f] for f in ("schedule.json", "standings.json", "trades.json", "teams.json"))
+      and [r["player"] for r in load("rosters")] == [r["player"] for r in json.loads(before_run["rosters.json"])] and any(r["player"] == "Bam Adebayo" for r in load("injuries")))
+check("pasted time not moved when the sheet was not read", load("state")["league_updated"] == json.loads(before_run["state.json"])["league_updated"])
+ws.sheet_fail = False
+ws.edit = lambda a: {"ok": True, "rows": []}
+code, out = run(ws, "2026-11-19")
+check("old web app version (market only): clear message", code == 1 and "still the old version" in out and "New version" in out, out)
+ws.edit = lambda a: {"ok": False, "error": "missing tabs: Scores. Run setup in Apps Script"}
+code, out = run(ws, "2026-11-19")
+check("tabs missing: message passed on", code == 1 and "missing tabs: Scores" in out, out)
+ws.edit = None
+
+print("15. Sheet: display names; switching back to Yahoo")
+reset("sheet", {"1": "Team Hali", "4": "Team Luka"})
+ws = league_week()
+
+
+def display_in_sheet(a):
+    for r in a["rosters"]:
+        if r["team"] == "The Haliban":
+            r["team"] = "Team Hali"          # the hub's name is accepted too
+    return a
+
+
+ws.edit = display_in_sheet
+code, out = run(ws, "2026-11-16")
+blob = "".join(open(os.path.join(WORK, "data", f), encoding="utf-8").read() for f in os.listdir(os.path.join(WORK, "data")) if f != "htb.json")
+check("display names applied to sheet data (Yahoo names in the sheet)", code == 0 and "Haliban" not in blob and "Cotton Pickers" not in blob and "Team Hali" in blob and "Team Luka" in blob and "Problems" not in out, out)
+check("display name typed in the sheet is accepted", len([r for r in load("rosters") if r["team"] == "Team Hali"]) == len(ws.rosters["1"]))
+check("tagline kept", next(m for m in load("managers") if m["team"] == "Team Hali")["tagline"] == "Dirty Work")
+ws.name["5"] = "Davao Dragons"   # renamed on the Info tab; the tabs still use the old name in places
+for r in ws.schedule:
+    for k in ("team_a", "team_b"):
+        r[k] = "Davao Dragons" if r[k] == "DAVRAA Boys" else r[k]
+ws.edit = None
+code, out = run(ws, "2026-11-17")
+blob = "".join(snapshot()[f] for f in ("schedule.json", "standings.json", "rosters.json", "players.json", "managers.json", "teams.json"))
+check("team renamed on the Info tab: new name everywhere", code == 0 and "DAVRAA Boys" not in blob and "Davao Dragons" in blob and "DAVRAA Boys is now Davao Dragons" in load("log")[-1]["change"], out)
+with open(SOURCES, "w", encoding="utf-8") as f:
+    f.write('{"league_data": "Sheets"}')
+ws.name["5"] = "DAVRAA Boys"
+ws.tid["Davao Dragons"] = "5"
+code, out = run(ws, "2026-11-18")
+check("a wrong word in sources.json falls back to Yahoo and says so", "league_data must be" in out and "**League data source:** Yahoo" in out and ws.yahoo_calls > 0 and code == 0, out)
+check("state follows the source", load("state")["league_source"] == "yahoo")
+os.remove(DISPLAY)
+if SAVED_DISPLAY is not None:
+    with open(DISPLAY, "w", encoding="utf-8") as f:
+        f.write(SAVED_DISPLAY)
 
 shutil.rmtree(WORK, ignore_errors=True)
 print("\n%d passed, %d failed" % (checks["pass"], checks["fail"]))
