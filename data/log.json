@@ -41,5 +41,6 @@
 {"version": "1.39", "date": "2026-11-16", "change": "News."},
 {"version": "1.40", "date": "2026-11-16", "change": "Standings; pending trades; injuries; news; team display names updated."},
 {"version": "1.41", "date": "2026-11-16", "change": "News."},
-{"version": "1.42", "date": "2026-11-17", "change": "Injuries; news."}
+{"version": "1.42", "date": "2026-11-17", "change": "Injuries; news."},
+{"version": "1.43", "date": "2026-11-18", "change": "Injuries; news."}
 ]
