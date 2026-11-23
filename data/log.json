@@ -46,5 +46,6 @@
 {"version": "1.44", "date": "2026-11-19", "change": "Injuries; news."},
 {"version": "1.45", "date": "2026-11-20", "change": "Injuries; news."},
 {"version": "1.46", "date": "2026-11-21", "change": "Injuries; news."},
-{"version": "1.47", "date": "2026-11-22", "change": "Injuries; news."}
+{"version": "1.47", "date": "2026-11-22", "change": "Injuries; news."},
+{"version": "1.48", "date": "2026-11-23", "change": "Hashtagbasketball stats refresh; injuries; news."}
 ]
