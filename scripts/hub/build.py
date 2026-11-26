@@ -12,7 +12,7 @@ OUT_CODES = {"O", "OUT", "OFS", "INJ", "NA", "SUSP", "IL", "IR", "PUP"}
 DTD_CODES = {"GTD", "DTD", "P", "PROB"}
 HTB_SOURCE = "Hashtagbasketball %s per game (%s)"
 OUTSIDE_SOURCE = "Outside Hashtagbasketball top 200: prior per-game estimate"
-YAHOO_SOURCE = "Yahoo season averages (not in Hashtagbasketball top 200)"
+NO_STATS = "No stats yet (not in Hashtagbasketball top 200)"
 
 
 def aliases():
@@ -42,13 +42,13 @@ def display_names():
         return {}
 
 
-def team_names(teams_file, yahoo_teams, cfg):
-    """Returns (teams rows, {old name: new name}) from Yahoo's current names, with display names applied."""
+def team_names(teams_file, sheet_teams, cfg):
+    """Returns (teams rows, {old name: new name}) from the team names in the Google Sheet (Yahoo's names), with display names applied."""
     managers = {str(k): v for k, v in (cfg.get("managers") or {}).items()}
     shown = display_names()
     old = {str(t["team_id"]): t for t in (teams_file or [])}
     rows, renames = [], {}
-    for t in sorted(yahoo_teams, key=lambda x: int(x["team_id"] or 0)):
+    for t in sorted(sheet_teams, key=lambda x: int(x["team_id"] or 0)):
         tid = str(t["team_id"])
         prev = old.get(tid)
         name = shown.get(tid) or t["name"] or (prev or {}).get("team", "")
@@ -60,7 +60,7 @@ def team_names(teams_file, yahoo_teams, cfg):
 
 
 def apply_display_names(teams):
-    """Without Yahoo: switch the saved team list to the display names. Returns (teams, {old: new})."""
+    """Without the sheet: switch the saved team list to the display names. Returns (teams, {old: new})."""
     shown = display_names()
     renames = {}
     for t in teams or []:
@@ -111,7 +111,7 @@ STATUS = {"postevent": "Final", "midevent": "In progress", "preevent": "Not star
 
 
 def apply_scoreboard(schedule, week, matchups, names, cfg, current_week):
-    """Update one week of the schedule from Yahoo. Keeps matchup ids and team order when the pairings are the same."""
+    """Update one week of the schedule from the sheet's Scores rows. Keeps matchup ids and team order when the pairings are the same."""
     matchups = [m for m in matchups if len(m["teams"]) == 2 and not m.get("is_playoffs")]
     if not matchups or week > cfg["regular_season_last_week"]:
         return schedule
@@ -144,9 +144,9 @@ def apply_scoreboard(schedule, week, matchups, names, cfg, current_week):
     return schedule
 
 
-def standings_rows(yahoo, names, managers):
+def standings_rows(table, names, managers):
     rows = []
-    for t in yahoo:
+    for t in table:
         w, l, tie = t["w"], t["l"], t["t"]
         games = w + l + tie
         pct = (w + 0.5 * tie) / games if games else 0.0
@@ -168,7 +168,8 @@ def standings_rows(yahoo, names, managers):
 
 
 # ---------------- rosters, players, injuries ----------------
-def yahoo_status(code):
+def status_word(code):
+    """Yahoo injury code (as pasted in the sheet) -> Healthy / Out / Questionable / Day-to-day."""
     c = (code or "").upper()
     if not c:
         return "Healthy"
@@ -179,20 +180,20 @@ def yahoo_status(code):
     return "Day-to-day"
 
 
-def build_rosters(yahoo_teams, names, old_players, espn, htb, yahoo_stats, today, season_label, alias):
-    """Returns (rosters, players, injuries, notes). espn may be None (source failed): statuses then come from Yahoo
-    and the previous return dates are kept."""
+def build_rosters(sheet_teams, names, old_players, espn, htb, _unused, today, season_label, alias):
+    """Returns (rosters, players, injuries, new players). sheet_teams: sheet.League.rosters(). espn may be None (source failed):
+    statuses then come from the sheet's status codes and the previous return dates are kept."""
     prev = {util.norm(p["player"]): p for p in old_players or []}
     espn_k = rekey(espn, alias) if espn is not None else None
     htb_k = rekey(htb or {}, alias)
     rosters, players, injuries, new_players = [], [], [], []
-    for t in yahoo_teams:
+    for t in sheet_teams:
         team = names.get(t["team_id"], t["name"])
         for yp in t["players"]:
             key = util.norm(yp["player"])
             il = "IL" if yp["slot"] in ("IL", "IL+") else ""
             role = util.role_of(yp["pos"])
-            status = yahoo_status(yp["yahoo_status"])
+            status = status_word(yp["yahoo_status"])
             out_until, est, detail = None, "—", yp.get("note", "")
             inj = espn_k.get(key) if espn_k is not None else None
             if inj:
@@ -225,10 +226,8 @@ def build_rosters(yahoo_teams, names, old_players, espn, htb, yahoo_stats, today
                     extra = {"value": line["value"], "htb_rank": line["htb_rank"], "gp": line["gp"], "htb_date": line.get("date"),
                              "source": HTB_SOURCE % (season_label, util.short_date(dt.date.fromisoformat(line["date"])) if line.get("date") else "")}
                 else:
-                    ys = (yahoo_stats or {}).get(yp.get("player_key"))
-                    stats = {k: (ys or {}).get(k, 0.0) for k in util.STAT_KEYS}
-                    extra = {"value": CAP, "htb_rank": None, "gp": (ys or {}).get("gp"), "htb_date": None,
-                             "source": YAHOO_SOURCE if ys else "No stats yet (not in Hashtagbasketball top 200)"}
+                    stats = {k: 0.0 for k in util.STAT_KEYS}
+                    extra = {"value": CAP, "htb_rank": None, "gp": None, "htb_date": None, "source": NO_STATS}
             row = {**base, **{k: extra[k] for k in ("value",)}, **stats, "htb_rank": extra["htb_rank"], "gp": extra["gp"], "htb_date": extra["htb_date"], "source": extra["source"]}
             # same key order as the hub's players file
             players.append({k: row[k] for k in ["player", "team", "nba_team", "pos", "role", "status", "il", "avail", "out_until", "value",
@@ -236,13 +235,6 @@ def build_rosters(yahoo_teams, names, old_players, espn, htb, yahoo_stats, today
             if status != "Healthy":
                 injuries.append({"player": yp["player"], "nba_team": yp["nba_team"], "ube_team": team, "status": status, "est_return": est, "detail": detail})
     return rosters, players, injuries, new_players
-
-
-def players_needing_yahoo_stats(yahoo_teams, old_players, htb, alias):
-    prev = {util.norm(p["player"]) for p in old_players or []}
-    htb_k = rekey(htb or {}, alias)
-    return [yp["player_key"] for t in yahoo_teams for yp in t["players"]
-            if util.norm(yp["player"]) not in prev and util.norm(yp["player"]) not in htb_k and yp.get("player_key")]
 
 
 def apply_htb(players, htb, date, season_label, alias):
@@ -273,7 +265,7 @@ def apply_cap(players):
 
 
 def apply_injuries_only(rosters, players, espn, today, alias):
-    """Used when Yahoo failed: refresh injury statuses on the rosters we already have."""
+    """Used when the sheet could not be read: refresh injury statuses on the rosters we already have."""
     espn_k = rekey(espn, alias)
     by = {r["player"]: r for r in rosters}
     injuries = []
@@ -294,18 +286,6 @@ def apply_injuries_only(rosters, players, espn, today, alias):
     return injuries
 
 
-# ---------------- trades ----------------
-def trade_rows(pending, names):
-    rows = []
-    for t in pending:
-        a, b = names.get(t["team_a_id"]), names.get(t["team_b_id"])
-        if not a or not b or not (t["a_gets"] or t["b_gets"]):
-            continue
-        rows.append({"deal": "T" + (t["key"].split(".")[-1] or str(len(rows) + 1)), "team_a": a, "a_gets": ", ".join(t["a_gets"]),
-                     "team_b": b, "b_gets": ", ".join(t["b_gets"]), "processes": "Pending vote"})
-    return rows
-
-
 # ---------------- team cards ----------------
 def run_model():
     """Runs the page's own model (scripts/rank.js). Returns {'profiles': [...], 'power': [...]}."""
@@ -315,8 +295,17 @@ def run_model():
     return json.loads(out.stdout)
 
 
+def pill(cats, ranks, good, n):
+    """3 to 4 categories for a team-card pill. Green (good): every category ranked 1st-3rd, at most 4, topped up to 3 with
+    the next best. Red: every category ranked in the bottom three, at most 4, topped up to 3 with the next worst."""
+    order = sorted(cats, key=lambda c: (ranks[c] if good else -ranks[c], cats.index(c)))
+    hit = [c for c in order if (ranks[c] <= 3 if good else ranks[c] >= n - 2)][:4]
+    return hit + [c for c in order if c not in hit][:max(0, 3 - len(hit))]
+
+
 def manager_rows(old_managers, teams, model):
-    """Playbook, punts, summary and power rank from the model. Taglines are never changed here."""
+    """Green and red pills and power rank from the model. Nickname (tagline) and description (summary) are written by
+    hand and never changed here."""
     old = {m["team"]: m for m in old_managers or []}
     power = {r["team"]: r["power_rank"] for r in model["power"]}
     rows = []
@@ -326,16 +315,8 @@ def manager_rows(old_managers, teams, model):
         row = {"team": t["team"], "manager": t["manager"], "tagline": prev.get("tagline", ""), "playbook": prev.get("playbook", ""),
                "punt": prev.get("punt", ""), "summary": prev.get("summary", ""), "overall_rank": power.get(t["team"], prev.get("overall_rank", len(rows) + 1))}
         if len(ranks) == len(util.CATS):
-            best = sorted(util.CATS, key=lambda c: (ranks[c], util.CATS.index(c)))
-            worst = sorted(util.CATS, key=lambda c: (-ranks[c], util.CATS.index(c)))
-            n = len(teams)
-            punts = [c for c in worst if ranks[c] >= n - 2][:3] or worst[:1]
-            firsts = [c for c in util.CATS if ranks[c] == 1]
-            lasts = [c for c in util.CATS if ranks[c] == n]
-            row["playbook"] = " · ".join(best[:3])
-            row["punt"] = ", ".join(punts)
-            row["summary"] = ("Best " + ", ".join(firsts) if firsts else "%s in %s" % (util.ordinal(ranks[best[0]]), best[0])) + "; " + \
-                             ("last in " + ", ".join(lasts) if lasts else "%s in %s" % (util.ordinal(ranks[worst[0]]), worst[0])) + "."
+            row["playbook"] = " · ".join(pill(util.CATS, ranks, True, len(teams)))
+            row["punt"] = " · ".join(pill(util.CATS, ranks, False, len(teams)))
         rows.append(row)
     rows.sort(key=lambda r: r["overall_rank"])
     return rows

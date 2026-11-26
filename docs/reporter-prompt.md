@@ -1,6 +1,6 @@
 # Reporter prompt (for a Claude chat with the Flaim connector)
 
-Use this when the hub gets its league data from the Google Sheet (`config/sources.json` says `"sheet"`).
+The hub gets its league data from the Google Sheet. This prompt gets that data from Yahoo through Flaim.
 Open a new Claude chat that has the **Flaim** connector on, paste one of the two prompts below, and wait for the blocks.
 A smaller model is fine.
 
@@ -102,4 +102,4 @@ If there are no pending trades, write only the header. Last line of the block: E
 
 - Flaim shows the pending trades Yahoo lets your account see. If a trade is missing, type it into the Trades tab by hand, above the `END` line.
 - Typing by hand is fine in every tab. Team columns have a dropdown with the valid names.
-- New season: change the `league_id` and `season_year` in both prompts.
+- New season: change the `league_id` and `season_year` in both prompts (league id **478.l.211732** and season **2026** are this season's). Then see "Each new season" in the README.

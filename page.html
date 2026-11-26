@@ -325,7 +325,7 @@
         <li>Player value = Hashtagbasketball's 9-cat total.</li>
         <li>Refreshed every Monday. Last refresh: <b id="set-htb">—</b>.</li>
         <li>Players outside Hashtagbasketball's top 200: <span id="set-fallback">—</span>. They keep their previous per-game estimate and rank below #200.</li>
-        <li>Rosters, standings and scores: Yahoo. NBA games: official NBA schedule. Injuries and news: daily.</li>
+        <li>Rosters, standings and scores: Yahoo, pasted into the Google Sheet. NBA games: official NBA schedule. Injuries and news: daily.</li>
       </ul></div>
       <div class="ube-card"><h3>Power rankings</h3><ul>
         <li>Counts up to <b id="set-count">13</b> players per team: the 10 starters and 3 bench spots.</li>
@@ -344,8 +344,10 @@
       </ul></div>
       <div class="ube-card"><h3>Category profile and team cards</h3><ul>
         <li>Radar (Rosters tab) shows the category ranks above. Outer edge = 1st, dashed ring = league middle.</li>
-        <li>Team card tagline = the team's playbook name.</li>
-        <li>Green pill = top 3 categories. Red pill = punts: categories ranked 8th–10th (up to 3), otherwise the single weakest.</li>
+        <li>Team card name = a 3-word nickname for the team's playstyle.</li>
+        <li>Green pill = 3–4 strongest categories by current rank. Red pill = 3–4 weakest by current rank (IL players not counted).</li>
+        <li>Description = playstyle with every player healthy: Core, Swing and Underdog categories.</li>
+        <li>Category ranks table: Cats/wk = projected categories won per week now (IL excluded). Healthy = the same with IL players back (best 13 of the full roster); bold when it beats Cats/wk by 0.15 or more.</li>
         <li>Description = best and last categories only.</li>
       </ul></div>
       <div class="ube-card"><h3>Weekly matchup prediction</h3><ul>
@@ -374,9 +376,9 @@
         <li>Projected week uses the matchup prediction above.</li>
       </ul></div>
       <div class="ube-card"><h3>Update schedule</h3><ul>
-        <li>Daily at 2:30 PM (Manila), automatic: Yahoo scores, standings, rosters, IL slots and pending trades; injuries; news.</li>
+        <li>Daily at 2:30 PM (Manila), automatic: league data from the Google Sheet (scores, standings, rosters, IL slots, pending trades); injuries; news.</li>
         <li>Monday: Hashtagbasketball stats refresh, category ranks, power rankings, NBA schedule for the next weeks.</li>
-        <li>Updates run on their own. No manual sync needed.</li>
+        <li>League data is pasted into the Google Sheet each week (and after trades or adds/drops). Everything else runs on its own.</li>
       </ul></div>
     </div>
     <div class="ube-card" id="log-card">
@@ -794,7 +796,10 @@ dash.calc('power', {
       const cats = [...new Set(pr.map((r) => r.cat))];
       const t = document.createElement('table');
       const hr = document.createElement('tr');
-      hr.append(ube.el('th', 'num', '#'), ube.el('th', null, 'Team'), ...cats.map((c) => ube.el('th', 'mid', c)), ube.el('th', 'ube-hide-sm', 'Punt'));
+      hr.append(ube.el('th', 'num', '#'), ube.el('th', null, 'Team'), ...cats.map((c) => ube.el('th', 'mid', c)), ube.el('th', 'num ube-hide-sm', 'Cats/wk'), ube.el('th', 'num ube-hide-sm', 'Healthy'));
+      hr.lastChild.title = 'Cats/wk with IL players back (best 13 of the full roster)';
+      const pl = ube.ready('players'); let hw = null;
+      if (pl && window.UBE_RANK) { const g = {}; pl.forEach((p) => { (g[p.team] = g[p.team] || []).push({ ...p, avail: 1 }); }); const ag = {}; Object.keys(g).forEach((k) => { ag[k] = UBE_RANK.totals(g[k]); }); hw = UBE_RANK.catsWeek(ag); }
       const thead = document.createElement('thead'); thead.appendChild(hr);
       const tb = document.createElement('tbody');
       teams.forEach((r) => {
@@ -805,13 +810,20 @@ dash.calc('power', {
           const td = ube.el('td', 'g ' + (p.grade || ''), p.rank != null ? String(p.rank) : '–');
           td.title = c + ': ' + p.value; tr.appendChild(td);
         });
-        tr.appendChild(ube.el('td', 'ube-small ube-muted ube-hide-sm', r.punt));
+        const cw = pw ? pw.find((x) => x.team === r.team) : null;
+        const ctd = ube.el('td', 'num ube-hide-sm', cw ? cw.cats_week.toFixed(1) : '–'); ctd.style.color = 'var(--color-fg-muted)';
+        tr.appendChild(ctd);
+        const hv = hw && hw[r.team] != null ? hw[r.team] : null;
+        const htd = ube.el('td', 'num ube-hide-sm', hv != null ? hv.toFixed(1) : '–');
+        if (hv != null && cw) { const d = hv - cw.cats_week; if (d >= 0.15) htd.style.fontWeight = '600'; htd.title = (d >= 0 ? '+' : '') + d.toFixed(2) + ' vs now'; }
+        htd.style.color = 'var(--color-fg-muted)';
+        tr.appendChild(htd);
         tb.appendChild(tr);
       });
       const lead = document.createElement('tr');
       lead.append(ube.el('td'), ube.el('td', 'ube-small ube-muted', 'Category leader'));
       cats.forEach((c) => { const p = pr.find((x) => x.cat === c && x.rank === 1); lead.appendChild(ube.el('td', 'g ube-small', p ? short(p.team) : '–')); });
-      lead.appendChild(ube.el('td', 'ube-hide-sm'));
+      lead.append(ube.el('td', 'ube-hide-sm'), ube.el('td', 'ube-hide-sm'));
       lead.style.borderTop = '2px solid var(--color-border-line)';
       tb.appendChild(lead);
       t.append(thead, tb); matrix.replaceChildren(t);
@@ -825,9 +837,18 @@ dash.calc('power', {
       head.append(h, mark(ube.el('span', 'ube-small ube-muted', r.manager), 'manager'));
       const tag = mark(ube.el('p', 'ube-tagline', r.tagline), 'tagline');
       const pills = ube.el('div', 'ube-controls');
-      const punt = ube.el('span', 'ube-pill bad'); punt.append(document.createTextNode('Punt: '), mark(ube.el('span', null, r.punt), 'punt'));
+      const punt = ube.el('span', 'ube-pill bad'); punt.append(mark(ube.el('span', null, r.punt), 'punt'));
       pills.append(mark(ube.el('span', 'ube-pill ok', r.playbook), 'playbook'), punt);
-      const sum = mark(ube.el('p', 'ube-small', r.summary), 'summary'); sum.style.margin = '0';
+      const sum = mark(ube.el('div', 'ube-small'), 'summary');
+      sum.style.cssText = 'margin:0;padding-top:var(--cds-gap-sm, 8px);border-top:1px solid var(--color-border-line);display:grid;grid-template-columns:auto 1fr;column-gap:14px;row-gap:3px;line-height:1.5;';
+      const sm = /^(.*?)\.\s*(Core:.*)$/.exec(r.summary || '');
+      if (sm) {
+        sm[2].split(' · ').forEach((part) => {
+          const k = part.indexOf(':');
+          const cats = ube.el('span', 'ube-muted', part.slice(k + 1).trim().split(/,\s*/).join(' ')); cats.style.wordSpacing = '6px';
+          sum.append(ube.el('span', null, part.slice(0, k)), cats);
+        });
+      } else sum.textContent = r.summary || '';
       card.append(head, tag, pills, sum);
       return card;
     }));
@@ -1096,7 +1117,7 @@ window.ubeModel = (() => {
     $('sc-inj').replaceChildren(...(inj.length ? inj.map((p) => { const d = ube.el('div', 'sc-item', p.player + ' '); d.appendChild(ube.pill(p.status)); if (p.il) d.appendChild(ube.el('span', 'ube-small ube-muted', ' IL')); return d; }) : [ube.el('div', 'sc-item ube-muted', 'None')]));
     const wins = rows.filter((x) => x.k === 'A').map((x) => x.c); const loss = rows.filter((x) => x.k === 'B').map((x) => x.c);
     const beat = [];
-    if (mg && mg.punt) beat.push(['They punt', mg.punt]);
+    if (mg && mg.punt) beat.push(['Their weak spots', mg.punt]);
     if (wins.length) beat.push(['Lock in', wins.join(', ')]);
     if (swing.length) beat.push(['Chase', swing.map((x) => x.c).join(', ')]);
     if (loss.length) beat.push(['Likely concede', loss.join(', ')]);

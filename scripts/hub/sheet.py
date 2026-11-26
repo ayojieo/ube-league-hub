@@ -1,7 +1,7 @@
-"""League data from the Google Sheet. Used when config/sources.json says "league_data": "sheet".
+"""League data from the Google Sheet (the hub's only league source; Yahoo's API is not available to us).
 
 Reads the sheet's web app (config/site.json market_url, with ?tab=league) and turns the Scores, Standings, Rosters
-and Trades tabs into the same shapes the Yahoo reader returns, so build.py treats both sources the same way.
+and Trades tabs into the shapes build.py works with. Team names in the sheet are the Yahoo team names.
 Bad rows are skipped and listed in problems; the old data for them is kept. Nothing here writes files."""
 import json
 import os
@@ -10,8 +10,6 @@ import unicodedata
 
 from . import build, util
 
-SOURCES = ("yahoo", "sheet")
-LABEL = {"yahoo": "Yahoo", "sheet": "Google Sheet"}
 HEAD = {"scores": ["week", "team_a", "cats_a", "cats_b", "team_b", "status"],
         "standings": ["rank", "team", "w", "l", "t"],
         "rosters": ["team", "player", "nba_team", "pos", "slot", "status"],
@@ -25,21 +23,6 @@ STATUS_CODES = build.OUT_CODES | build.DTD_CODES | {"Q"}
 SCORE_STATUS = {"final": "postevent", "in progress": "midevent", "inprogress": "midevent", "live": "midevent", "not started": "preevent"}
 BACK = {"Final": "postevent", "In progress": "midevent", "Not started": "preevent"}
 OLD_STATUS = {"Out": "O", "Questionable": "Q", "Day-to-day": "DTD"}
-
-
-def league_source():
-    """Which source the league data comes from. Returns (source, problem or None)."""
-    try:
-        with open(os.path.join(util.CONFIG, "sources.json"), encoding="utf-8") as f:
-            data = json.load(f)
-    except OSError:
-        return "yahoo", None
-    except ValueError:
-        return "yahoo", "config/sources.json could not be read (check the quotes and braces). Using Yahoo."
-    value = str((data or {}).get("league_data", "yahoo") if isinstance(data, dict) else data).strip().lower()
-    if value not in SOURCES:
-        return "yahoo", 'config/sources.json: league_data must be "yahoo" or "sheet" (found "%s"). Using Yahoo.' % value[:20]
-    return value, None
 
 
 def sheet_url():

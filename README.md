@@ -3,8 +3,11 @@
 Self-updating hub for the UBE League (10-team, 9-category Yahoo fantasy basketball).
 
 - Site: https://ayojieo.github.io/ube-league-hub
-- Updates itself every day at 2:30 PM Manila time. No AI involved.
+- League data (scores, standings, rosters, IL slots, pending trades) comes from a Google Sheet that you paste into once a week.
+- Everything else (injuries, headlines, player stats, NBA schedule) updates itself every day at 2:30 PM Manila time. No AI involved.
 - The page does all the math (category ranks, power rankings, playoff odds, matchup projections) in the browser.
+
+Yahoo's Fantasy API is not available to us (Yahoo only offers it in the United States and Canada), so the hub never contacts Yahoo.
 
 ## How it works
 
@@ -13,105 +16,26 @@ Self-updating hub for the UBE League (10-team, 9-category Yahoo fantasy basketba
 | `page.html` | The hub page, copied from the Claude hub. See `CHANGES.md`. |
 | `shim.js`, `shim.css`, `index.html` | Let the page run on its own. |
 | `data/*.json` | Everything the page shows. Rewritten by the daily update. |
-| `scripts/update.py` | The daily update: league data (scores, standings, rosters, IL slots, pending trades) from Yahoo or from the Google Sheet, ESPN (injuries, headlines), Hashtagbasketball (player stats, Mondays), NBA schedule. |
-| `config/sources.json` | The switch: league data from `"yahoo"` or from `"sheet"`. See "League data from the Google Sheet". |
-| `.github/workflows/` | Runs the scripts: **Daily update**, **Yahoo login**, **New season**. |
-| `apps-script/Code.gs` | Goes into the Google Sheet that stores the Trade market and the league data tabs. |
-| `docs/reporter-prompt.md` | The prompt to paste into Claude (with Flaim) to get the weekly blocks for the sheet. |
+| `scripts/update.py` | The daily update: league data from the Google Sheet, ESPN (injuries, headlines), Hashtagbasketball (player stats, Mondays), NBA schedule. |
+| `.github/workflows/` | Runs the scripts: **Daily update** and **New season**. |
+| `apps-script/Code.gs` | Goes into the Google Sheet that holds the Trade market and the league data tabs. |
+| `docs/reporter-prompt.md` | The prompt to paste into Claude (with Flaim) to get the weekly tables for the sheet. |
 | `config/league.json` | League settings. Edited once a year. |
-| `config/site.json` | The Trade market link. |
+| `config/site.json` | The Google Sheet web app link (Trade market and league data). |
+| `config/display_names.json` | Names shown on the hub instead of Yahoo's (team 1 = Team Hali, team 4 = Team Luka). |
 
-If one source fails, the others still update and the old data for the failed one is kept. If the league data source (Yahoo, or the Google Sheet) cannot be read, the run is marked failed and GitHub emails you.
+If one source fails, the others still update and the old data for the failed one is kept. If the Google Sheet cannot be read, the run is marked failed and GitHub emails you. Nothing else sends email.
 
-## First-time setup
-
-### 1. Upload the files
-
-1. Unzip `ube-league-hub.zip` on your computer.
-2. Open the unzipped folder. You should see `index.html`, `data`, `scripts`, `.github` and more.
-   - On a Mac, `.github` is hidden. Press **Cmd + Shift + .** in Finder to show it.
-3. On GitHub, open the repository → **Add file** → **Upload files**.
-4. Select everything inside the folder and drag it into the upload box. Wait until all files are listed.
-5. Click **Commit changes**.
-6. Check: the repository now shows a `.github/workflows` folder with three files. If it is missing, create each file by hand: **Add file** → **Create new file**, type the name `.github/workflows/daily.yml`, paste the file's content, commit. Repeat for `yahoo-login.yml` and `new-season.yml`.
-
-### 2. Turn on the site
-
-1. **Settings** → **Pages**.
-2. Source: **Deploy from a branch**. Branch: **main**, folder **/ (root)**. Click **Save**.
-3. Wait about a minute, then open https://ayojieo.github.io/ube-league-hub. The hub shows the starting data.
-
-### 3. Trade market (Google Sheet)
-
-1. Open your blank Google Sheet **UBE Trade Market**.
-2. **Extensions** → **Apps Script**. Delete the sample code.
-3. Open `apps-script/Code.gs` in this repository, copy all of it, paste it into the editor, click **Save**.
-4. Left side: **Project Settings** (gear) → **Script Properties** → **Add script property**. Property: `PASSCODE`. Value: your passcode. **Save script properties**.
-5. Back to **Editor**. In the function list at the top choose **setup**, click **Run**. Google asks for permission: choose your account → **Advanced** → **Go to (project name)** → **Allow**. A tab named `market` appears in the sheet with all 10 teams.
-6. **Deploy** → **New deployment** → gear icon → **Web app**. Execute as: **Me**. Who has access: **Anyone**. Click **Deploy**.
-7. Copy the **Web app URL** (it ends with `/exec`).
-8. On GitHub open `config/site.json` → pencil icon → paste the URL between the quotes so it reads `"market_url": "https://script.google.com/macros/s/.../exec"` → **Commit changes**.
-
-Only people with the passcode can save. To change the passcode, change the `PASSCODE` property. If you change the script later, use **Deploy** → **Manage deployments** → edit → **New version**, so the link stays the same.
-
-### 4. Yahoo login (one time)
-
-1. Open https://ayojieo.github.io/ube-league-hub/setup.html
-2. Paste your Yahoo **Client ID**, click **Open Yahoo and click Agree**.
-3. The browser lands on a page that cannot load (`https://localhost:8080/?code=...`). That is expected. Copy the whole address, paste it into step 2 of the setup page, click **Copy code**.
-4. Click **Open the Yahoo login workflow** → **Run workflow** → paste the code → **Run workflow**.
-5. Do steps 3 and 4 within a few minutes. The code expires quickly and works once. If the run fails, start again from step 2.
-6. A green check means the key is saved as the secret `YAHOO_REFRESH_TOKEN`.
-
-### 5. First update
-
-1. **Actions** → **Daily update** → **Run workflow** → **Run workflow**.
-2. Open the run when it finishes. The summary lists what changed and any problems.
-3. Refresh the site after a minute.
-
-From here it runs by itself every day.
-
-## Day to day
-
-- **Edit a tagline:** open `data/managers.json` → pencil → change the `tagline` text → commit. The update never changes taglines.
-- **Run an update now:** Actions → Daily update → Run workflow.
-- **Refresh stats or schedules now:** same, and type `htb` or `schedule` (or `htb,schedule`) in the box.
-- **A run failed:** open it and read the summary. Most failures fix themselves on the next run.
-
-| Problem in the summary | What to do |
-|---|---|
-| Yahoo sign-in failed | Do "Yahoo login" again (step 4). |
-| Hashtagbasketball ... | Their page changed or blocked the request. Last week's stats stay. If it repeats for weeks, the reader in `scripts/hub/sources.py` needs an update. |
-| NBA schedule failed | The old schedule stays. Matchup falls back to per-game averages for weeks with no schedule. |
-| No stats found yet for: (player) | A new player nobody lists yet. Fixed by the next Monday refresh. |
-| A player from another site is not matched | Add the two spellings to `config/aliases.json` (their spelling: Yahoo's spelling). |
-
-## League data from the Google Sheet
-
-The hub can take its league data (scores, standings, rosters, IL slots, pending trades) from your Google Sheet instead of Yahoo.
-Use this while Yahoo has not approved the app. Injuries, headlines, player stats and the NBA schedule work the same either way.
-
-### The switch
-
-`config/sources.json` holds one word:
-
-| Value | What the daily update does |
-|---|---|
-| `"yahoo"` | Reads the league data from Yahoo (needs the Yahoo login). This is the starting value. |
-| `"sheet"` | Reads the league data from the Google Sheet. Yahoo is not called at all, so no Yahoo failure emails. |
-
-To switch: open `config/sources.json` on GitHub → pencil icon → change `yahoo` to `sheet` (keep the quotes) → **Commit changes** → **Actions** → **Daily update** → **Run workflow**.
-To switch back, change the word back. The run summary always starts with the source that was used.
-
-### One-time setup of the sheet
+## Setting up the sheet
 
 1. Open the Google Sheet **UBE Trade Market** → **Extensions** → **Apps Script**.
-2. Select all the code, delete it, paste the new `apps-script/Code.gs`, click **Save**.
-3. Choose **setup** in the function list, click **Run**. Google asks for permission again (the script can now send you a reminder email): choose your account → **Advanced** → **Go to (project name)** → **Allow**.
-4. **Deploy** → **Manage deployments** → pencil icon → Version: **New version** → **Deploy**. The link stays the same.
-5. Check the sheet: new tabs **Info**, **Scores**, **Standings**, **Rosters**, **Trades**, already filled with the hub's data. The **market** tab is untouched.
+2. Select all the code, delete it, paste `apps-script/Code.gs`, click **Save**.
+3. Choose **setup** in the function list, click **Run**. If Google asks for permission: choose your account → **Advanced** → **Go to (project name)** → **Allow**.
+4. Choose **loadCurrentData**, click **Run**. This fills the Scores, Standings, Rosters and Trades tabs with the league data written in the script (copied from the Claude hub when the script was made). The Trade market tab is not touched.
+5. **Deploy** → **Manage deployments** → pencil icon → Version: **New version** → **Deploy**. The link stays the same.
+6. Check the sheet: tabs **market**, **Info**, **Scores**, **Standings**, **Rosters**, **Trades**.
 
-Running **setup** again is safe: it only creates tabs that are missing and never changes a tab that exists.
+Running **setup** again is safe: it only creates tabs that are missing. **loadCurrentData** replaces the four league tabs' rows, so only run it when you mean to.
 
 ### What each tab means
 
@@ -131,8 +55,8 @@ Running **setup** again is safe: it only creates tabs that are missing and never
 
 ### Weekly routine
 
-1. **Tuesday morning:** open a Claude chat with the Flaim connector, paste the **WEEKLY** prompt from `docs/reporter-prompt.md`.
-2. Paste the four blocks into the four tabs (the same file says where to click).
+1. **Tuesday morning** (Yahoo closes the week on Monday evening Manila time): open a Claude chat with the Flaim connector and paste the **WEEKLY** prompt from `docs/reporter-prompt.md`.
+2. Paste the four tables into the four tabs (the same file says where to click).
 3. Done. The 2:30 PM update picks it up. To see it sooner: **Actions** → **Daily update** → **Run workflow**.
 4. After a trade, an add or a drop during the week: use the **QUICK** prompt (Rosters and Trades only).
 
@@ -142,13 +66,20 @@ The hub's footer shows "League data: Google Sheet · pasted (date)". If nothing 
 
 - Turn on: Apps Script → choose **enableReminder** → **Run**. Every Tuesday at 10 AM (Manila) the script emails you "Paste the weekly UBE update" with a link to the sheet, but only if last week's `Final` scores are not in the Scores tab yet.
 - Turn off: choose **disableReminder** → **Run**.
-- The email is sent from your own Google account to yourself. That is why Google lists one extra permission, "Send email as you", when you run **setup** with the new code. The script sends nothing unless you turn the reminder on.
+- The email is sent from your own Google account to yourself. That is why Google lists one extra permission, "Send email as you", when you run **setup**. The script sends nothing unless you turn the reminder on.
 
-### Problems in the run summary (sheet mode)
+## Day to day
+
+- **Edit a nickname or description:** open `data/managers.json` → pencil → change the `tagline` (nickname) or `summary` (description) text → commit. The update never changes them; it only refreshes the green and red pills and the power rank.
+- **Run an update now:** Actions → Daily update → Run workflow.
+- **Refresh stats or schedules now:** same, and type `htb` or `schedule` (or `htb,schedule`) in the box.
+- **A run failed:** open it and read the summary. Most failures fix themselves on the next run.
+
+### Problems in the run summary
 
 | Message | What to do |
 |---|---|
-| Google Sheet: ... still the old version | Do "One-time setup of the sheet", steps 2 to 4. |
+| Google Sheet: ... still the old version | Do "Setting up the sheet", steps 2 to 5. |
 | Google Sheet: ... missing tabs | Apps Script → run **setup**. |
 | Google Sheet: HTTP ... / did not send data | Check the deployment: Execute as **Me**, access **Anyone**. Check `market_url` in `config/site.json`. |
 | unknown team "..." (row skipped) | Fix the name in that row. Valid names are on the Info tab. |
@@ -162,24 +93,27 @@ The hub's footer shows "League data: Google Sheet · pasted (date)". If nothing 
 | No stats found yet for: (player) | A new player outside Hashtagbasketball's top 200. He counts at the minimum value until he is listed. |
 
 Bad rows are skipped and the hub keeps what it had for them. The run fails (and GitHub emails you) only when the sheet cannot be read at all.
+| Hashtagbasketball ... | Their page changed or blocked the request. Last week's stats stay. If it repeats for weeks, the reader in `scripts/hub/sources.py` needs an update. |
+| NBA schedule failed | The old schedule stays. Matchup falls back to per-game averages for weeks with no schedule. |
+| A player from another site is not matched | Add the two spellings to `config/aliases.json` (their spelling: Yahoo's spelling). |
 
 ## Each new season
 
-1. Before May 1, 2027: make a new GitHub token (same settings as before) and replace the `GH_PAT` secret.
-2. When the season ends, the update saves the final hub under `archive/<season>/`, clears the live data and pauses.
-3. When the new Yahoo league exists (after the draft): edit `config/league.json`
-   - `league_key`: the new one. It looks like `478.l.211732`: the number after `l.` is in your league's web address, the first number changes every season (the New season run fails with a clear message if it is wrong).
-   - `season`, `week1_start`, `week2_start`, `season_end`, `trade_deadline`, `rivalry_weeks`, `playoff_weeks`, and `managers` (Yahoo team number: name).
-4. Actions → **New season** → Run workflow. This step reads Yahoo, whatever `config/sources.json` says.
-   If you use the Google Sheet: also change `WEEK2_START` near the middle of `apps-script/Code.gs`, the team names on the Info tab, and the league id in `docs/reporter-prompt.md`.
+1. When the season ends, the update saves the final hub under `archive/<season>/`, clears the live data and pauses.
+2. When the new Yahoo league exists (after the draft):
+   - Edit `config/league.json`: `season`, `week1_start`, `week2_start`, `season_end`, `trade_deadline`, `rivalry_weeks`, `playoff_weeks`, and `managers` (Yahoo team number: name).
+   - In `docs/reporter-prompt.md`, change `league_id` and `season_year` in both prompts (Flaim shows the new league id).
+   - In `apps-script/Code.gs` (and the copy in Apps Script), change `WEEK2_START`. On the sheet's Info tab, update the team names.
+3. Fill the sheet for the new league: the Rosters tab, and in the Scores tab every week's pairings (one row per matchup, scores empty, status `Not started`). Ask Claude with Flaim for "every week's matchups, weeks 1 to 19, as the Scores table". Clear the old Standings and Trades rows (leave the header and an `END` row).
+4. Actions → **New season** → Run workflow.
 5. If the Daily update shows as disabled (GitHub pauses schedules after 60 quiet days): Actions → Daily update → **Enable workflow**.
 6. In `page.html`, the Season line on the Overview tab (trade deadline, playoff dates, prize pool) is plain text. Edit it by hand if those change.
 
 ## Good to know
 
-- **Pending trades:** Yahoo's data feed shows accepted trades waiting for the league vote. Private offers are never shown. If Yahoo only returns trades that involve your team, other teams' pending trades will not appear here.
-- **Team renamed on Yahoo:** the hub follows the new name everywhere. That team's Trade market row starts empty under the new name.
+- **Pending trades:** Flaim shows the pending trades Yahoo lets your account see. If a trade is missing, type it into the Trades tab by hand, above the `END` line.
+- **Team renamed on Yahoo:** change its name on the sheet's Info tab. The hub follows the new name everywhere. That team's Trade market row starts empty under the new name.
 - **Weekly Slate dates:** the page assumes every week is Monday to Sunday. If Yahoo runs one long week (All-Star break), the dates shown for later weeks drift. The Matchup tab is not affected.
-- **Checking the scripts:** `python3 tests/run_tests.py` runs the update against made-up answers (Yahoo and Google Sheet). `node tests/code_gs_test.js` does the same for the sheet's script. They need Python 3.9+ and Node, and use the frozen data in `tests/fixtures`.
+- **Checking the scripts:** `python3 tests/run_tests.py` runs the update against made-up answers. `node tests/code_gs_test.js` does the same for the sheet's script. They need Python 3.9+ and Node, and use the frozen data in `tests/fixtures`.
 
-Data comes from Yahoo Fantasy (directly, or pasted into the Google Sheet), ESPN, Hashtag Basketball and the NBA schedule. This is a private league tool, not affiliated with any of them.
+Data comes from Yahoo Fantasy (pasted into the Google Sheet), ESPN, Hashtag Basketball and the NBA schedule. This is a private league tool, not affiliated with any of them.

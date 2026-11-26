@@ -157,14 +157,12 @@
       catch (err) { console.error('page script ' + (i + 1), err); }
     });
   }
-  /* Where the league data (scores, standings, rosters, trades) came from, and when: data/state.json. */
-  const LEAGUE_SOURCE = { yahoo: ['Yahoo', 'updated'], sheet: ['Google Sheet', 'pasted'] };
+  /* League data (scores, standings, rosters, trades) is pasted into the Google Sheet; data/state.json says when. */
   const STALE_DAYS = 8;
   function leagueData(state) {
-    const kind = state && LEAGUE_SOURCE[state.league_source];
     const when = state && state.league_updated ? new Date(state.league_updated) : null;
-    if (!kind || !when || isNaN(when)) return null;
-    return { name: kind[0], verb: kind[1], when, day: when.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
+    if (!when || isNaN(when)) return null;
+    return { name: 'Google Sheet', verb: 'pasted', when, day: when.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) };
   }
   function footer(state, archive) {
     const foot = document.getElementById('hub-foot'); if (!foot) return;

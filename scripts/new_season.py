@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Start a new season. Edit config/league.json first (league_key, season, dates), then run the New season workflow.
-Rebuilds teams, schedule, standings and rosters from Yahoo, keeps each manager's tagline, and starts a fresh changelog."""
+"""Start a new season. First: edit config/league.json (season, dates, rivalry weeks, managers) and fill the Google Sheet
+for the new league (Info tab team names, Scores with every week's pairings, Rosters). Then run the New season workflow.
+Builds teams, schedule, standings and rosters from the sheet, keeps each manager's nickname, and starts a fresh changelog."""
 import datetime as dt
 import os
 import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from hub import build, season, sources, util, yahoo  # noqa: E402
+from hub import build, season, sheet, sources, util  # noqa: E402
 
 DATE_LINE = re.compile(r"const s = new Date\(\d{4}, \d{1,2}, \d{1,2} \+ \(w - 2\) \* 7\);")
 
@@ -48,24 +49,24 @@ def main():
     for m in util.read("managers", []) or []:
         old_cards[m["manager"]] = m.get("tagline", "")
 
-    y = yahoo.Client(cfg)
-    meta = y.meta()
-    y_teams = y.rosters()
-    teams, _ = build.team_names([], y_teams, cfg)
+    lg = sheet.League(sheet.fetch(), [], cfg)
+    teams, _ = build.team_names([], lg.yahoo_teams(), cfg)
     names = {t["team_id"]: t["team"] for t in teams}
     managers = {t["team_id"]: t["manager"] for t in teams}
-    problems = []
-    try:
-        weeks = y.game_weeks()
-    except Exception:
-        weeks = []
-    schedule = []
-    for w in range(1, cfg["regular_season_last_week"] + 1):
-        try:
-            schedule = build.apply_scoreboard(schedule, w, y.scoreboard(w), names, cfg, meta["current_week"])
-        except Exception as e:
-            problems.append("Week %d schedule: %s" % (w, e))
-    standings = build.standings_rows(y.standings(), names, managers)
+    weeks = []
+    schedule = lg.scores([], names, util.week_of(today, cfg, weeks))
+    table = lg.standings([], names) or [{"team_id": t["team_id"], "name": t["team"], "rank": i, "w": 0, "l": 0, "t": 0}
+                                         for i, t in enumerate(teams, 1)]
+    standings = build.standings_rows(table, names, managers)
+    sheet_teams = lg.rosters([], names, [])
+    if not sheet_teams:
+        raise RuntimeError("the Rosters tab is empty. Paste the new rosters first.")
+    problems = list(lg.problems)
+    last = cfg["regular_season_last_week"]
+    missing = [w for w in range(1, last + 1) if not any(r["week"] == w for r in schedule)]
+    if missing:
+        problems.append("No pairings yet for week%s %s. Paste them into the Scores tab (status Not started); the daily update adds them."
+                        % ("s" if len(missing) > 1 else "", ", ".join(map(str, missing))))
     alias = build.aliases()
     try:
         htb = sources.hashtag()
@@ -79,13 +80,7 @@ def main():
     except Exception as e:
         espn = None
         problems.append("%s" % e)
-    try:
-        need = build.players_needing_yahoo_stats(y_teams, [], htb, alias)
-        y_stats = y.season_stats(need) if need else {}
-    except Exception as e:
-        y_stats = {}
-        problems.append("Yahoo stats: %s" % e)
-    rosters, players, injuries, _ = build.build_rosters(y_teams, names, [], espn, htb, y_stats, today, name, alias)
+    rosters, players, injuries, _ = build.build_rosters(sheet_teams, names, [], espn, htb, None, today, name, alias)
     build.apply_cap(players)
     try:
         games = sources.nba_games(cfg, weeks)
@@ -115,10 +110,8 @@ def main():
         problems.append("Team cards: %s" % e)
     util.write("managers", cards)
     util.write("log", [{"version": "1.0", "date": today.isoformat(), "change": "Season %s started." % name}])
-    util.write("state", {"season": name, "season_over": False, "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")})
-    if y.new_refresh and os.environ.get("NEW_REFRESH_TOKEN_FILE"):
-        with open(os.environ["NEW_REFRESH_TOKEN_FILE"], "w", encoding="utf-8") as f:
-            f.write(y.new_refresh)
+    now = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    util.write("state", {"season": name, "season_over": False, "updated": now, "league_source": "sheet", "league_updated": lg.updated or now})
     lines = ["## New season: %s" % name, "", "%d teams, %d matchups, %d players loaded." % (len(teams), len(schedule), len(players))]
     if problems:
         lines += ["", "**Problems:**"] + ["- " + p for p in problems]
@@ -135,5 +128,5 @@ if __name__ == "__main__":
         sys.exit(main())
     except RuntimeError as e:
         print("New season could not start: %s" % e)
-        print("Check league_key in config/league.json and that the Yahoo login is still valid.")
+        print("Check the Google Sheet (Info, Scores and Rosters tabs) and config/site.json.")
         sys.exit(1)

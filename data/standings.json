@@ -1,12 +1,12 @@
 [
-{"rank": 1, "team": "DAVRAA Boys", "manager": "Justin", "w": 19, "l": 7, "t": 1, "record": "19-7-1", "pct": ".722", "gb": "-", "waiver": 4},
-{"rank": 2, "team": "Jayden's Amazing Team", "manager": "Jayden", "w": 17, "l": 10, "t": 0, "record": "17-10-0", "pct": ".630", "gb": "2.5", "waiver": 8},
-{"rank": 3, "team": "Barangay Ginebra San Miguel", "manager": "Dean", "w": 17, "l": 10, "t": 0, "record": "17-10-0", "pct": ".630", "gb": "2.5", "waiver": 7},
-{"rank": 4, "team": "Paulo's Perfect Team", "manager": "Paulo", "w": 15, "l": 12, "t": 0, "record": "15-12-0", "pct": ".556", "gb": "4.5", "waiver": 2},
-{"rank": 5, "team": "Yaxel and Em", "manager": "Steven", "w": 13, "l": 13, "t": 1, "record": "13-13-1", "pct": ".500", "gb": "6", "waiver": 3},
-{"rank": 6, "team": "Team Luka", "manager": "Shondrae", "w": 13, "l": 13, "t": 1, "record": "13-13-1", "pct": ".500", "gb": "6", "waiver": 10},
-{"rank": 7, "team": "Nathaniel's Notable Team", "manager": "Nathaniel", "w": 13, "l": 14, "t": 0, "record": "13-14-0", "pct": ".481", "gb": "6.5", "waiver": 1},
-{"rank": 8, "team": "Team Hali", "manager": "Allen", "w": 13, "l": 14, "t": 0, "record": "13-14-0", "pct": ".481", "gb": "6.5", "waiver": 9},
-{"rank": 9, "team": "JJ's Official Team", "manager": "JJ", "w": 8, "l": 18, "t": 1, "record": "8-18-1", "pct": ".315", "gb": "11", "waiver": 6},
-{"rank": 10, "team": "Nathan's Nifty Team", "manager": "Nathan", "w": 5, "l": 22, "t": 0, "record": "5-22-0", "pct": ".185", "gb": "14.5", "waiver": 5}
+{"rank": 1, "team": "DAVRAA Boys", "manager": "Justin", "w": 29, "l": 15, "t": 1, "record": "29-15-1", "pct": ".656", "gb": "-", "waiver": 2},
+{"rank": 2, "team": "Jayden's Amazing Team", "manager": "Jayden", "w": 28, "l": 16, "t": 1, "record": "28-16-1", "pct": ".633", "gb": "1", "waiver": 4},
+{"rank": 3, "team": "Paulo's Perfect Team", "manager": "Paulo", "w": 27, "l": 18, "t": 0, "record": "27-18-0", "pct": ".600", "gb": "2.5", "waiver": 8},
+{"rank": 4, "team": "Barangay Ginebra San Miguel", "manager": "Dean", "w": 24, "l": 21, "t": 0, "record": "24-21-0", "pct": ".533", "gb": "5.5", "waiver": 3},
+{"rank": 5, "team": "Yaxel and Em", "manager": "Steven", "w": 23, "l": 21, "t": 1, "record": "23-21-1", "pct": ".522", "gb": "6", "waiver": 7},
+{"rank": 6, "team": "Nathaniel's Notable Team", "manager": "Nathaniel", "w": 23, "l": 22, "t": 0, "record": "23-22-0", "pct": ".511", "gb": "6.5", "waiver": 1},
+{"rank": 7, "team": "Team Luka", "manager": "Shondrae", "w": 21, "l": 22, "t": 2, "record": "21-22-2", "pct": ".489", "gb": "7.5", "waiver": 6},
+{"rank": 8, "team": "Team Hali", "manager": "Allen", "w": 21, "l": 24, "t": 0, "record": "21-24-0", "pct": ".467", "gb": "8.5", "waiver": 5},
+{"rank": 9, "team": "JJ's Official Team", "manager": "JJ", "w": 17, "l": 27, "t": 1, "record": "17-27-1", "pct": ".389", "gb": "12", "waiver": 10},
+{"rank": 10, "team": "Nathan's Nifty Team", "manager": "Nathan", "w": 9, "l": 36, "t": 0, "record": "9-36-0", "pct": ".200", "gb": "20.5", "waiver": 9}
 ]
