@@ -515,7 +515,7 @@ dash.calc('roster_build', {
 });
 
 window.ube = {
-  mine: "Team Hali",
+  mine: "The Haliban",
   el(tag, cls, text) { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; },
   fail(tbody, cols) { const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = cols; td.appendChild(ube.el('div', 'ube-fail', 'Failed to load')); tr.appendChild(td); tbody.replaceChildren(tr); },
   ready(id) { const d = dash.data(id); return d.status === 'ok' ? d.data : null; },
