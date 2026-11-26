@@ -51,5 +51,6 @@
 {"version": "1.49", "date": "2026-11-24", "change": "Injuries; news."},
 {"version": "1.50", "date": "2026-11-25", "change": "Injuries; news."},
 {"version": "1.51", "date": "2026-11-26", "change": "Injuries; news."},
-{"version": "1.52", "date": "2026-11-27", "change": "League data now comes from the Google Sheet (Yahoo removed); page updated to match the Claude hub (team cards, Cats/wk and Healthy columns); current scores, standings, rosters and team cards."}
+{"version": "1.52", "date": "2026-11-27", "change": "League data now comes from the Google Sheet (Yahoo removed); page updated to match the Claude hub (team cards, Cats/wk and Healthy columns); current scores, standings, rosters and team cards."},
+{"version": "1.53", "date": "2026-11-27", "change": "Injuries; news."}
 ]
