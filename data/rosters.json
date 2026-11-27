@@ -88,7 +88,7 @@
 {"player": "Julius Randle", "team": "Nathaniel's Notable Team", "nba_team": "BKN", "pos": "PF", "role": "Wings", "status": "", "il": "", "new": ""},
 {"player": "Brandon Miller", "team": "Nathaniel's Notable Team", "nba_team": "CHA", "pos": "SF,PF", "role": "Wings", "status": "", "il": "", "new": ""},
 {"player": "Victor Wembanyama", "team": "Nathaniel's Notable Team", "nba_team": "SAS", "pos": "C", "role": "Bigs", "status": "", "il": "", "new": ""},
-{"player": "Giannis Antetokounmpo", "team": "Nathaniel's Notable Team", "nba_team": "MIA", "pos": "PF,C", "role": "Bigs", "status": "", "il": "", "new": ""},
+{"player": "Giannis Antetokounmpo", "team": "Nathaniel's Notable Team", "nba_team": "MIA", "pos": "PF,C", "role": "Bigs", "status": "Questionable", "il": "", "new": ""},
 {"player": "Damian Lillard", "team": "Nathaniel's Notable Team", "nba_team": "POR", "pos": "PG", "role": "Guards", "status": "", "il": "", "new": ""},
 {"player": "LaMelo Ball", "team": "Nathaniel's Notable Team", "nba_team": "MIN", "pos": "PG", "role": "Guards", "status": "Questionable", "il": "", "new": ""},
 {"player": "Aaron Gordon", "team": "Nathaniel's Notable Team", "nba_team": "DEN", "pos": "PF,C", "role": "Bigs", "status": "", "il": "", "new": ""},
@@ -156,7 +156,7 @@
 {"player": "Ausar Thompson", "team": "Barangay Ginebra San Miguel", "nba_team": "DET", "pos": "SG,SF,PF", "role": "Wings", "status": "", "il": "", "new": ""},
 {"player": "Kyrie Irving", "team": "Barangay Ginebra San Miguel", "nba_team": "DAL", "pos": "PG,SG", "role": "Guards", "status": "", "il": "", "new": ""},
 {"player": "Daniel Gafford", "team": "Barangay Ginebra San Miguel", "nba_team": "DAL", "pos": "C", "role": "Bigs", "status": "", "il": "", "new": ""},
-{"player": "Cade Cunningham", "team": "Barangay Ginebra San Miguel", "nba_team": "DET", "pos": "PG,SG", "role": "Guards", "status": "Questionable", "il": "IL", "new": ""},
+{"player": "Cade Cunningham", "team": "Barangay Ginebra San Miguel", "nba_team": "DET", "pos": "PG,SG", "role": "Guards", "status": "Out", "il": "IL", "new": ""},
 {"player": "OG Anunoby", "team": "Barangay Ginebra San Miguel", "nba_team": "NYK", "pos": "SF,PF", "role": "Wings", "status": "Out", "il": "IL", "new": ""},
 {"player": "Grayson Allen", "team": "Barangay Ginebra San Miguel", "nba_team": "CHA", "pos": "SG,SF", "role": "Wings", "status": "Out", "il": "IL", "new": ""}
 ]
