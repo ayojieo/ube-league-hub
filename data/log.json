@@ -54,5 +54,6 @@
 {"version": "1.52", "date": "2026-11-27", "change": "League data now comes from the Google Sheet (Yahoo removed); page updated to match the Claude hub (team cards, Cats/wk and Healthy columns); current scores, standings, rosters and team cards."},
 {"version": "1.53", "date": "2026-11-27", "change": "Injuries; news."},
 {"version": "1.54", "date": "2026-11-27", "change": "Standings (from Google Sheet); injuries; team renamed: Team Hali is now The Haliban; team renamed: Team Luka is now Master Luka’s Cotton Pickers."},
-{"version": "1.55", "date": "2026-11-27", "change": "Injuries; news."}
+{"version": "1.55", "date": "2026-11-27", "change": "Injuries; news."},
+{"version": "1.56", "date": "2026-11-28", "change": "Injuries; news."}
 ]
